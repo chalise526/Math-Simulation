@@ -1216,7 +1216,29 @@ document.addEventListener('click', (e) => {
         document.getElementById('equation-modal').style.display = 'none';
     }
 });
-
+// --- Bulletproof Expand / Collapse Canvas Feature ---
+document.addEventListener('click', function(e) {
+    // Check if the clicked element (or its icon) is our expand button
+    const expandBtn = e.target.closest('#btn-expand');
+    if (!expandBtn) return; // If it's not the expand button, ignore the click
+    
+    // Toggle the expanded class on the body
+    document.body.classList.toggle('canvas-expanded');
+    
+    // Change the icon and text based on the state
+    if (document.body.classList.contains('canvas-expanded')) {
+        expandBtn.innerHTML = '<i class="fa-solid fa-minimize"></i> Collapse';
+        expandBtn.classList.add('active');
+    } else {
+        expandBtn.innerHTML = '<i class="fa-solid fa-maximize"></i> Expand';
+        expandBtn.classList.remove('active');
+    }
+    
+    // Force the canvas to recalculate its new, larger dimensions immediately
+    if (typeof resizeCanvas === 'function') {
+        setTimeout(resizeCanvas, 50);
+    }
+});
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
         textModal.style.display = 'none';
@@ -1225,24 +1247,6 @@ document.addEventListener('keydown', (e) => {
         referenceModal.style.display = 'none';
         document.getElementById('equation-modal').style.display = 'none';
     }
-});
-// --- Expand / Collapse Canvas Feature ---
-const btnExpand = document.getElementById('btn-expand');
-
-btnExpand.addEventListener('click', function() {
-    document.body.classList.toggle('canvas-expanded');
-    
-    // Change the icon and text based on the state
-    if (document.body.classList.contains('canvas-expanded')) {
-        this.innerHTML = '<i class="fa-solid fa-minimize"></i> Collapse';
-        this.classList.add('active');
-    } else {
-        this.innerHTML = '<i class="fa-solid fa-maximize"></i> Expand';
-        this.classList.remove('active');
-    }
-    
-    // Force the canvas to recalculate its new, larger dimensions immediately
-    setTimeout(resizeCanvas, 50);
 });
 // Initial Load & Filter Restoration
 loadSavedFilters();
