@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Simulation Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Load MathJax for rendering math formulas -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+    <!-- Header Section -->
+    <header class="top-header">
+        <div class="logo-area">
+            <!-- You can replace this placeholder with an actual <img> tag pointing to your logo asset -->
+            <div class="logo-placeholder">Logo</div>
+        </div>
+        <div class="header-titles">
+            <h1>श्री योगी नरहरिनाथ अध्यात्म विज्ञान गीतापाठशाला</h1>
+            <h2>Grade 9 Mathematics Interactive Simulation</h2>
+        </div>
+        <div class="toolbar">
+            <button id="btn-draw" class="tool-btn active">Pen</button>
+            <button id="btn-erase" class="tool-btn">Eraser</button>
+            <button id="btn-clear" class="tool-btn">Clear Board</button>
+            
+            <select id="lesson-history" class="history-dropdown">
+                <option value="day2">Day 2: Statistics (Mode)</option>
+                <option value="day1">Day 1: Geometry (Heron's Formula)</option>
+            </select>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <button class="nav-btn active" data-target="intro">परिचय (Intro)</button>
+            <button class="nav-btn" data-target="concept">अवधारणा (Concept)</button>
+            <button class="nav-btn" data-target="formula">सूत्र (Formula)</button>
+            <button class="nav-btn" data-target="practice">अभ्यास (Practice)</button>
+        </aside>
+
+        <!-- Content Stage & Drawing Canvas -->
+        <main class="content-stage">
+            <!-- The drawing canvas sits on top of the content -->
+            <canvas id="drawing-board"></canvas>
+            
+            <!-- Dynamic Content Area -->
+            <div id="lesson-content" class="lesson-content">
+                <!-- Content will be injected here by JavaScript -->
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
