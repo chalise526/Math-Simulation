@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Math Simulation - Grade 9</title>
+    <!-- Modern Fonts and Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- Load MathJax for Math Formulas -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <!-- Load GeoGebra API -->
+    <script src="https://www.geogebra.org/apps/deployggb.js"></script>
+    
+    <!-- Load html2canvas for Download Feature -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <!-- Load jsPDF for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+
+    <!-- Header Section -->
+    <header class="top-header">
+        <div class="logo-area">
+            <div class="school-badge"><i class="fa-solid fa-school"></i></div>
+        </div>
+        <div class="header-titles">
+            <h1>श्री योगी नरहरिनाथ संस्कृत विद्यापीठ</h1>
+            <h2>Gaindakot Municipality</h2>
+        </div>
+        <div class="toolbar">
+            <button id="btn-move" class="tool-btn" title="Move Tool"><i class="fa-solid fa-arrows-alt"></i> Move</button>
+            <button id="btn-draw" class="tool-btn active"><i class="fa-solid fa-pen"></i> Pen</button>
+            <button id="btn-type" class="tool-btn"><i class="fa-solid fa-keyboard"></i> Type</button>
+            <button id="btn-shape" class="tool-btn"><i class="fa-solid fa-shapes"></i> Shapes</button>
+            <button id="btn-equation" class="tool-btn"><i class="fa-solid fa-function"></i> Equation</button>
+            <button id="btn-erase" class="tool-btn"><i class="fa-solid fa-eraser"></i> Eraser</button>
+            <button id="btn-photo" class="tool-btn"><i class="fa-solid fa-image"></i> Photo</button>
+            <button id="btn-clear" class="tool-btn"><i class="fa-solid fa-trash-can"></i> Clear</button>
+            <button id="btn-download" class="tool-btn download-btn"><i class="fa-solid fa-download"></i> Save</button>
+        </div>
+        <!-- Hidden file input for photo upload -->
+        <input type="file" id="photo-input" accept="image/*" style="display:none;">
+    </header>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+        <div class="filter-group">
+            <label><i class="fa-solid fa-book"></i> कक्षा (Class)</label>
+            <select id="class-filter">
+                <option value="">Select Class</option>
+                <option value="class6">कक्षा ६ (Class 6)</option>
+                <option value="class7">कक्षा ७ (Class 7)</option>
+                <option value="class8">कक्षा ८ (Class 8)</option>
+                <option value="class9">कक्षा ९ (Class 9)</option>
+                <option value="class10">कक्षा १० (Class 10)</option>
+            </select>
+        </div>
+        
+        <div class="filter-group">
+            <label><i class="fa-solid fa-layer-group"></i> एकाई (Unit)</label>
+            <select id="unit-filter">
+                <option value="">Select Unit</option>
+                <option value="unit1">समूह (Set)</option>
+                <option value="unit2">बीजगणित (Algebra)</option>
+                <option value="unit3">ज्यामिति (Geometry)</option>
+                <option value="unit4">तथ्याङ्कशास्त्र (Statstics)</option>
+                <option value="unit5">त्रिकोणमिति (Trigonometry)</option>
+                <option value="unit6">सम्भाव्यता (Probability)</option>
+            </select>
+        </div>
+        
+        <div class="filter-group">
+            <label><i class="fa-solid fa-heading"></i> शीर्षक (Title)</label>
+            <input type="text" id="title-filter" placeholder="Search topic...">
+        </div>
+        
+        <div class="filter-group">
+            <label><i class="fa-solid fa-calendar"></i> दिन (Day)</label>
+            <select id="day-filter">
+                <option value="">Select Day</option>
+                <option value="day1">दिन १ (Day 1)</option>
+                <option value="day2">दिन २ (Day 2)</option>
+                <option value="day3">दिन ३ (Day 3)</option>
+                <option value="day4">दिन ४ (Day 4)</option>
+                <option value="day5">दिन ५ (Day 5)</option>
+            </select>
+        </div>
+
+        <div class="filter-group filter-results-group" id="filter-results-group" style="display:none;">
+            <label><i class="fa-solid fa-list"></i> Matching Files</label>
+            <select id="file-results-select"></select>
+        </div>
+
+        <button id="btn-filter-clear" class="filter-btn-clear" title="Clear Filters"><i class="fa-solid fa-rotate-left"></i> Reset</button>
+
+        <span id="filter-status" class="filter-status"></span>
+    </div>
+
+    <div class="main-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h3>Lessons</h3>
+            </div>
+            <div id="nav-container" class="nav-container">
+                <button class="nav-btn active" data-target="intro"><i class="fa-solid fa-info-circle"></i> परिचय (Intro)</button>
+                <button class="nav-btn" data-target="concept"><i class="fa-solid fa-lightbulb"></i> अवधारणा (Concept)</button>
+                <button class="nav-btn" data-target="formula"><i class="fa-solid fa-square-root-variable"></i> सूत्रहरू (Formulas)</button>
+                <button class="nav-btn" data-target="activities"><i class="fa-solid fa-users-gear"></i> क्रियाकलाप (Activities)</button>
+                <button class="nav-btn" data-target="examples"><i class="fa-solid fa-chalkboard-user"></i> उदाहरण (Examples)</button>
+                <button class="nav-btn" data-target="practice"><i class="fa-solid fa-pencil"></i> अभ्यास (Practice)</button>
+                <button class="nav-btn" data-target="quiz"><i class="fa-solid fa-clipboard-question"></i> हाजिरी जवाफ (Quiz)</button>
+
+                <hr class="sidebar-divider">
+                <button class="nav-btn" id="blank-page-btn" data-target="blank"><i class="fa-solid fa-file"></i> Blank Page</button>
+            </div>
+        </aside>
+
+        <!-- Drawing Tools Panel -->
+        <div class="drawing-tools-panel">
+            <!-- Pen Tools -->
+            <div class="tool-group" id="pen-tools">
+                <h4>Pen Options</h4>
+                <div class="option-group">
+                    <label>Color:</label>
+                    <input type="color" id="pen-color" value="#e53e3e">
+                </div>
+                <div class="option-group">
+                    <label>Weight:</label>
+                    <select id="pen-weight">
+                        <option value="1">Thin</option>
+                        <option value="3" selected>Normal</option>
+                        <option value="5">Medium</option>
+                        <option value="8">Thick</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Shape Tools -->
+            <div class="tool-group" id="shape-tools" style="display: none;">
+                <h4>Math Shapes</h4>
+                <div class="shape-grid">
+                    <button class="shape-btn active" data-shape="rectangle" title="Rectangle"><i class="fa-solid fa-rectangle"></i></button>
+                    <button class="shape-btn" data-shape="circle" title="Circle"><i class="fa-solid fa-circle"></i></button>
+                    <button class="shape-btn" data-shape="triangle" title="Triangle"><i class="fa-solid fa-play"></i></button>
+                    <button class="shape-btn" data-shape="line" title="Line"><i class="fa-solid fa-minus"></i></button>
+                    <button class="shape-btn" data-shape="arrow" title="Arrow"><i class="fa-solid fa-arrow-right"></i></button>
+                    <button class="shape-btn" data-shape="parallelogram" title="Parallelogram"><i class="fa-solid fa-vector-square"></i></button>
+                </div>
+                <p class="field-hint shape-hint">Click and drag on the board to draw the selected shape.</p>
+            </div>
+        </div>
+
+        <!-- Content Stage & Drawing Canvas -->
+        <main class="content-stage" id="export-area">
+            <canvas id="drawing-board"></canvas>
+            <canvas id="shape-preview-board"></canvas>
+            
+            <!-- Photo Container -->
+            <div id="photos-container" class="photos-container"></div>
+            
+            <!-- Text Box Container -->
+            <div id="text-boxes-container" class="text-boxes-container"></div>
+
+            <!-- Equation Container -->
+            <div id="equation-container" class="equation-container"></div>
+            
+            <div class="lesson-container">
+                <div class="lesson-toolbar">
+                    <span id="current-tab-label" class="current-tab-label"><i class="fa-solid fa-info-circle"></i> परिचय (Intro)</span>
+                    <button id="btn-add-page" class="add-page-btn" title="Add a new page to this section"><i class="fa-solid fa-plus"></i> Add Page</button>
+                </div>
+
+                <div id="lesson-content" class="lesson-content">
+                    <!-- Content injected here -->
+                </div>
+
+                <!-- Pagination Controls -->
+                <div class="pagination-controls" id="pagination-controls">
+                    <button id="prev-page" class="page-btn"><i class="fa-solid fa-chevron-left"></i> Previous</button>
+                    <span id="page-indicator">Page 1 / 3</span>
+                    <button id="next-page" class="page-btn">Next <i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- References Section -->
+    <div class="references-section">
+        <div class="references-header">
+            <h3><i class="fa-solid fa-book-open"></i> References & Resources</h3>
+            <button id="btn-add-reference" class="add-ref-btn" title="Add Reference"><i class="fa-solid fa-plus"></i> Add</button>
+        </div>
+        <div class="references-container" id="references-container">
+            <!-- References will be added here -->
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>Made by Er. Kamal Chalise</p>
+    </footer>
+
+    <!-- Text Input Modal -->
+    <div id="text-modal" class="text-modal" style="display:none;">
+        <div class="text-modal-content">
+            <h3>Add Text</h3>
+            <textarea id="text-input" class="text-input" placeholder="Enter your text here..."></textarea>
+            <div class="text-formatting">
+                <label>Font Size:</label>
+                <input type="range" id="text-size" min="10" max="40" value="16">
+                <span id="text-size-display">16px</span>
+                <label>Font Color:</label>
+                <input type="color" id="text-color" value="#000000">
+            </div>
+            <div class="text-modal-buttons">
+                <button id="text-modal-save" class="modal-btn save-btn">Save</button>
+                <button id="text-modal-cancel" class="modal-btn cancel-btn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Text Modal -->
+    <div id="edit-text-modal" class="text-modal" style="display:none;">
+        <div class="text-modal-content">
+            <h3>Edit Text</h3>
+            <textarea id="edit-text-input" class="text-input" placeholder="Edit your text..."></textarea>
+            <div class="text-formatting">
+                <label>Font Size:</label>
+                <input type="range" id="edit-text-size" min="10" max="40" value="16">
+                <span id="edit-text-size-display">16px</span>
+                <label>Font Color:</label>
+                <input type="color" id="edit-text-color" value="#000000">
+            </div>
+            <div class="text-modal-buttons">
+                <button id="edit-text-save" class="modal-btn save-btn">Save</button>
+                <button id="edit-text-cancel" class="modal-btn cancel-btn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Equation Modal -->
+    <div id="equation-modal" class="text-modal" style="display:none;">
+        <div class="equation-modal-content">
+            <h3>Add Mathematical Equation</h3>
+            <div id="geogebra-applet" class="geogebra-applet"></div>
+            <div class="equation-modal-buttons">
+                <button id="equation-modal-save" class="modal-btn save-btn">Insert</button>
+                <button id="equation-modal-cancel" class="modal-btn cancel-btn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Page / Formula Editor Modal -->
+    <div id="page-editor-modal" class="text-modal" style="display:none;">
+        <div class="panel-modal-content page-editor-content">
+            <h3 id="page-editor-title">Add Page</h3>
+
+            <!-- Generic content fields (Intro, Concept, Activities, Examples, Practice, Quiz) -->
+            <div id="generic-page-fields">
+                <div class="form-group">
+                    <label>Page Heading (optional):</label>
+                    <input type="text" id="generic-page-heading" class="panel-input" placeholder="e.g., Key Concept">
+                </div>
+                <div class="form-group">
+                    <label>Content:</label>
+                    <textarea id="generic-page-content" class="text-input" placeholder="Write the lesson content for this page..."></textarea>
+                </div>
+            </div>
+
+            <!-- Formula/LaTeX fields (Formulas tab only) -->
+            <div id="formula-page-fields" style="display:none;">
+                <div class="form-group">
+                    <label>Formula Name (optional):</label>
+                    <input type="text" id="formula-page-heading" class="panel-input" placeholder="e.g., Area of a Triangle">
+                </div>
+                <div class="form-group">
+                    <label>LaTeX Code:</label>
+                    <textarea id="formula-latex-input" class="text-input latex-code" placeholder="e.g., Area = \sqrt{s(s-a)(s-b)(s-c)}" style="min-height: 100px;"></textarea>
+                    <p class="field-hint">Rendered live with <a href="https://www.mathjax.org/" target="_blank" rel="noopener">MathJax</a> (loaded from cdn.jsdelivr.net) — no need to type the \[ \] wrappers.</p>
+                </div>
+                <div class="form-group">
+                    <label>Live Preview:</label>
+                    <div id="formula-preview" class="formula-preview"><em>Your formula will appear here...</em></div>
+                </div>
+            </div>
+
+            <div class="panel-modal-buttons">
+                <button id="page-editor-save" class="modal-btn save-btn">Insert</button>
+                <button id="page-editor-cancel" class="modal-btn cancel-btn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Save Modal -->
+    <div id="save-modal" class="text-modal" style="display:none;">
+        <div class="save-modal-content">
+            <h3>Save Options</h3>
+            <p>Choose what you want to save:</p>
+            <div class="save-options">
+                <button id="save-current-photo" class="save-option-btn">
+                    <i class="fa-solid fa-image"></i> Save Current Page
+                </button>
+                <button id="save-entire-pdf" class="save-option-btn">
+                    <i class="fa-solid fa-file-pdf"></i> Save as PDF
+                </button>
+                <button id="print-page" class="save-option-btn">
+                    <i class="fa-solid fa-print"></i> Print
+                </button>
+            </div>
+            <button id="save-modal-cancel" class="modal-btn cancel-btn">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Add Reference Modal -->
+    <div id="reference-modal" class="text-modal" style="display:none;">
+        <div class="reference-modal-content">
+            <h3>Add Reference</h3>
+            <div class="form-group">
+                <label>Reference Title:</label>
+                <input type="text" id="ref-title-input" class="panel-input" placeholder="e.g., Geometry Basics">
+            </div>
+            <div class="form-group">
+                <label>Reference Type:</label>
+                <select id="ref-type-select" class="panel-input">
+                    <option value="image">Image</option>
+                    <option value="pdf">PDF</option>
+                    <option value="link">Link</option>
+                </select>
+            </div>
+            <div class="form-group" id="ref-file-group">
+                <label>Upload File:</label>
+                <input type="file" id="ref-file-input" class="panel-input" accept=".pdf,.jpg,.jpeg,.png,.gif">
+            </div>
+            <div class="form-group" id="ref-link-group" style="display:none;">
+                <label>URL:</label>
+                <input type="url" id="ref-link-input" class="panel-input" placeholder="https://example.com">
+            </div>
+            <div class="panel-modal-buttons">
+                <button id="reference-modal-save" class="modal-btn save-btn">Add Reference</button>
+                <button id="reference-modal-cancel" class="modal-btn cancel-btn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
