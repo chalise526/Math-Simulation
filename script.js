@@ -191,6 +191,68 @@ document.querySelector('.content-stage').addEventListener('dblclick', () => {
     }
 });
 
+// --- Photo Upload & Display Logic ---
+const photoInput = document.getElementById('photo-input');
+const photosContainer = document.getElementById('photos-container');
+
+document.getElementById('btn-photo').addEventListener('click', () => {
+    photoInput.click();
+});
+
+photoInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const photoElement = document.createElement('div');
+            photoElement.className = 'photo-item';
+            photoElement.innerHTML = `
+                <img src="${event.target.result}" alt="Inserted photo" draggable="true">
+                <div class="photo-controls">
+                    <button class="photo-btn resize-btn" title="Resize"><i class="fa-solid fa-expand"></i></button>
+                    <button class="photo-btn delete-btn" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            `;
+            
+            photosContainer.appendChild(photoElement);
+            
+            // Add drag functionality
+            const img = photoElement.querySelector('img');
+            let offsetX, offsetY;
+            
+            img.addEventListener('mousedown', (e) => {
+                offsetX = e.clientX - photoElement.offsetLeft;
+                offsetY = e.clientY - photoElement.offsetTop;
+                photoElement.classList.add('dragging');
+            });
+            
+            document.addEventListener('mousemove', (e) => {
+                if (photoElement.classList.contains('dragging')) {
+                    photoElement.style.left = (e.clientX - offsetX) + 'px';
+                    photoElement.style.top = (e.clientY - offsetY) + 'px';
+                }
+            });
+            
+            document.addEventListener('mouseup', () => {
+                photoElement.classList.remove('dragging');
+            });
+            
+            // Delete button
+            photoElement.querySelector('.delete-btn').addEventListener('click', () => {
+                photoElement.remove();
+            });
+            
+            // Resize button (makes image draggable by corners)
+            photoElement.querySelector('.resize-btn').addEventListener('click', () => {
+                photoElement.classList.toggle('resizable');
+            });
+        };
+        reader.readAsDataURL(file);
+    }
+    // Reset file input
+    photoInput.value = '';
+});
+
 // --- Download / Screenshot Logic ---
 document.getElementById('btn-download').addEventListener('click', () => {
     const exportArea = document.getElementById('export-area');
