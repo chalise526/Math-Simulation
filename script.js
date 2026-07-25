@@ -1226,7 +1226,24 @@ document.addEventListener('keydown', (e) => {
         document.getElementById('equation-modal').style.display = 'none';
     }
 });
+// --- Expand / Collapse Canvas Feature ---
+const btnExpand = document.getElementById('btn-expand');
 
+btnExpand.addEventListener('click', function() {
+    document.body.classList.toggle('canvas-expanded');
+    
+    // Change the icon and text based on the state
+    if (document.body.classList.contains('canvas-expanded')) {
+        this.innerHTML = '<i class="fa-solid fa-minimize"></i> Collapse';
+        this.classList.add('active');
+    } else {
+        this.innerHTML = '<i class="fa-solid fa-maximize"></i> Expand';
+        this.classList.remove('active');
+    }
+    
+    // Force the canvas to recalculate its new, larger dimensions immediately
+    setTimeout(resizeCanvas, 50);
+});
 // Initial Load & Filter Restoration
 loadSavedFilters();
 if (classFilter.value || unitFilter.value || dayFilter.value || titleFilter.value) {
