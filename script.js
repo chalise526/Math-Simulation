@@ -41,10 +41,17 @@ let currentTab = 'intro';
 let currentPageIndex = 0;
 let currentTabContentArray = [];
 let currentTool = 'pen';
+let currentShape = 'rectangle';
 let isDrawing = false;
 let draggedElement = null;
 let resizingElement = null;
 let textInputPosition = { x: 0, y: 0 };
+let editingTextBox = null;
+let shapeStartX = 0;
+let shapeStartY = 0;
+let currentPenColor = '#e53e3e';
+let currentPenWeight = 3;
+let geogebraApp = null;
 
 function loadContent() {
     const contentDiv = document.getElementById('lesson-content');
@@ -111,12 +118,12 @@ document.querySelectorAll('.nav-btn').forEach(btn => {
     });
 });
 
-document.getElementById('lesson-history').addEventListener('change', (e) => {
-    currentLesson = e.target.value;
-    currentPageIndex = 0;
-    currentTab = 'intro';
+// Blank page button handler
+document.getElementById('blank-page-btn').addEventListener('click', function(e) {
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-    document.querySelector('[data-target="intro"]').classList.add('active');
+    this.classList.add('active');
+    currentLesson = 'blank';
+    currentPageIndex = 0;
     loadContent();
 });
 
@@ -135,12 +142,17 @@ function resizeCanvas() {
 window.addEventListener('resize', resizeCanvas);
 setTimeout(resizeCanvas, 100);
 
-ctx.lineWidth = 3;
+ctx.lineWidth = currentPenWeight;
 ctx.lineCap = 'round';
 ctx.lineJoin = 'round';
-ctx.strokeStyle = '#e53e3e';
+ctx.strokeStyle = currentPenColor;
 
 function startDrawing(e) {
+    if (currentTool === 'shape') {
+        shapeStartX = e.clientX - canvas.getBoundingClientRect().left;
+        shapeStartY = e.clientY - canvas.getBoundingClientRect().top;
+        return;
+    }
     if (currentTool !== 'pen' && currentTool !== 'eraser') return;
     isDrawing = true;
     const rect = canvas.getBoundingClientRect();
@@ -151,6 +163,7 @@ function startDrawing(e) {
 }
 
 function draw(e) {
+    if (currentTool === 'shape') return;
     if (!isDrawing || (currentTool !== 'pen' && currentTool !== 'eraser')) return;
     
     const rect = canvas.getBoundingClientRect();
@@ -165,9 +178,68 @@ function draw(e) {
     }
 }
 
-function stopDrawing() {
+function stopDrawing(e) {
+    if (currentTool === 'shape' && isDrawing) {
+        const endX = e.clientX - canvas.getBoundingClientRect().left;
+        const endY = e.clientY - canvas.getBoundingClientRect().top;
+        drawShape(shapeStartX, shapeStartY, endX, endY, currentShape);
+    }
     isDrawing = false;
     ctx.beginPath();
+}
+
+function drawShape(startX, startY, endX, endY, shape) {
+    const width = endX - startX;
+    const height = endY - startY;
+    
+    ctx.strokeStyle = currentPenColor;
+    ctx.lineWidth = currentPenWeight;
+    
+    switch(shape) {
+        case 'rectangle':
+            ctx.strokeRect(startX, startY, width, height);
+            break;
+        case 'circle':
+            const radius = Math.sqrt(width * width + height * height) / 2;
+            ctx.beginPath();
+            ctx.arc(startX + width/2, startY + height/2, radius, 0, 2 * Math.PI);
+            ctx.stroke();
+            break;
+        case 'triangle':
+            ctx.beginPath();
+            ctx.moveTo(startX + width/2, startY);
+            ctx.lineTo(endX, endY);
+            ctx.lineTo(startX, endY);
+            ctx.closePath();
+            ctx.stroke();
+            break;
+        case 'line':
+            ctx.beginPath();
+            ctx.moveTo(startX, startY);
+            ctx.lineTo(endX, endY);
+            ctx.stroke();
+            break;
+        case 'arrow':
+            drawArrow(startX, startY, endX, endY);
+            break;
+    }
+}
+
+function drawArrow(fromX, fromY, toX, toY) {
+    const headlen = 15;
+    const angle = Math.atan2(toY - fromY, toX - fromX);
+
+    ctx.beginPath();
+    ctx.moveTo(fromX, fromY);
+    ctx.lineTo(toX, toY);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(toX, toY);
+    ctx.lineTo(toX - headlen * Math.cos(angle - Math.PI / 6), toY - headlen * Math.sin(angle - Math.PI / 6));
+    ctx.moveTo(toX, toY);
+    ctx.lineTo(toX - headlen * Math.cos(angle + Math.PI / 6), toY - headlen * Math.sin(angle + Math.PI / 6));
+    ctx.stroke();
 }
 
 canvas.addEventListener('mousedown', startDrawing);
@@ -182,29 +254,74 @@ canvas.addEventListener('touchend', stopDrawing);
 document.getElementById('btn-move').addEventListener('click', function(e) {
     currentTool = 'move';
     canvas.style.pointerEvents = 'none';
+    document.getElementById('pen-tools').style.display = 'none';
+    document.getElementById('shape-tools').style.display = 'none';
     updateToolButtons(this);
 });
 
 document.getElementById('btn-draw').addEventListener('click', function(e) {
     currentTool = 'pen';
     canvas.style.pointerEvents = 'auto';
+    document.getElementById('pen-tools').style.display = 'block';
+    document.getElementById('shape-tools').style.display = 'none';
     updateToolButtons(this);
 });
 
 document.getElementById('btn-type').addEventListener('click', function(e) {
     currentTool = 'type';
     canvas.style.pointerEvents = 'none';
+    document.getElementById('pen-tools').style.display = 'none';
+    document.getElementById('shape-tools').style.display = 'none';
     updateToolButtons(this);
+});
+
+document.getElementById('btn-shape').addEventListener('click', function(e) {
+    currentTool = 'shape';
+    canvas.style.pointerEvents = 'auto';
+    document.getElementById('pen-tools').style.display = 'none';
+    document.getElementById('shape-tools').style.display = 'block';
+    updateToolButtons(this);
+});
+
+document.getElementById('btn-equation').addEventListener('click', function(e) {
+    currentTool = 'equation';
+    canvas.style.pointerEvents = 'none';
+    document.getElementById('pen-tools').style.display = 'none';
+    document.getElementById('shape-tools').style.display = 'none';
+    updateToolButtons(this);
+    showEquationModal();
 });
 
 document.getElementById('btn-erase').addEventListener('click', function(e) {
     currentTool = 'eraser';
     canvas.style.pointerEvents = 'auto';
+    document.getElementById('pen-tools').style.display = 'none';
+    document.getElementById('shape-tools').style.display = 'none';
     updateToolButtons(this);
 });
 
 document.getElementById('btn-clear').addEventListener('click', () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+});
+
+// Pen color and weight
+document.getElementById('pen-color').addEventListener('change', (e) => {
+    currentPenColor = e.target.value;
+    ctx.strokeStyle = currentPenColor;
+});
+
+document.getElementById('pen-weight').addEventListener('change', (e) => {
+    currentPenWeight = parseInt(e.target.value);
+    ctx.lineWidth = currentPenWeight;
+});
+
+// Shape buttons
+document.querySelectorAll('.shape-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        document.querySelectorAll('.shape-btn').forEach(b => b.classList.remove('active'));
+        e.currentTarget.classList.add('active');
+        currentShape = e.currentTarget.getAttribute('data-shape');
+    });
 });
 
 function updateToolButtons(activeBtn) {
@@ -235,16 +352,17 @@ photoInput.addEventListener('change', (e) => {
 function createPhotoElement(imageSrc) {
     const photoElement = document.createElement('div');
     photoElement.className = 'photo-item';
-    photoElement.style.left = '100px';
-    photoElement.style.top = '100px';
+    photoElement.style.left = '50px';
+    photoElement.style.top = '50px';
     photoElement.style.width = '250px';
     photoElement.style.height = '200px';
     
     photoElement.innerHTML = `
         <img src="${imageSrc}" alt="Inserted photo" draggable="false">
         <div class="photo-controls">
-            <button class="photo-btn delete-btn" title="Delete"><i class="fa-solid fa-trash"></i></button>
+            <button class="photo-btn rotate-btn" title="Rotate"><i class="fa-solid fa-rotate-right"></i></button>
             <button class="photo-btn resize-btn" title="Resize"><i class="fa-solid fa-expand"></i></button>
+            <button class="photo-btn delete-btn" title="Delete"><i class="fa-solid fa-trash"></i></button>
         </div>
     `;
     
@@ -257,6 +375,7 @@ function setupPhotoInteraction(photoElement) {
     let isDragging = false;
     let isResizing = false;
     let startX, startY, startWidth, startHeight;
+    let rotation = 0;
     
     // Drag functionality
     photoElement.addEventListener('mousedown', (e) => {
@@ -279,6 +398,13 @@ function setupPhotoInteraction(photoElement) {
     document.addEventListener('mouseup', () => {
         isDragging = false;
         photoElement.classList.remove('dragging');
+    });
+    
+    // Rotate functionality
+    const rotateBtn = photoElement.querySelector('.rotate-btn');
+    rotateBtn.addEventListener('click', () => {
+        rotation = (rotation + 90) % 360;
+        img.style.transform = `rotate(${rotation}deg)`;
     });
     
     // Resize functionality
@@ -336,23 +462,13 @@ function setupPhotoInteraction(photoElement) {
     photoElement.querySelector('.delete-btn').addEventListener('click', () => {
         photoElement.remove();
     });
-    
-    // Allow drawing on photo when pen tool is active
-    img.addEventListener('mousedown', (e) => {
-        if (currentTool === 'pen' || currentTool === 'eraser') {
-            isDrawing = true;
-            const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            ctx.beginPath();
-            ctx.moveTo(x, y);
-        }
-    });
 }
 
 // --- Text Input Tool ---
 const textModal = document.getElementById('text-modal');
+const editTextModal = document.getElementById('edit-text-modal');
 const textInput = document.getElementById('text-input');
+const editTextInput = document.getElementById('edit-text-input');
 const textBoxesContainer = document.getElementById('text-boxes-container');
 
 contentStage.addEventListener('click', (e) => {
@@ -379,18 +495,33 @@ document.getElementById('text-modal-cancel').addEventListener('click', () => {
     textModal.style.display = 'none';
 });
 
+document.getElementById('edit-text-save').addEventListener('click', () => {
+    const text = editTextInput.value.trim();
+    if (text && editingTextBox) {
+        editingTextBox.textContent = text;
+        editingTextBox.setAttribute('data-text', text);
+    }
+    editTextModal.style.display = 'none';
+    editingTextBox = null;
+});
+
+document.getElementById('edit-text-cancel').addEventListener('click', () => {
+    editTextModal.style.display = 'none';
+    editingTextBox = null;
+});
+
 function createTextBox(text, x, y) {
     const textBox = document.createElement('div');
     textBox.className = 'text-box';
     textBox.textContent = text;
+    textBox.setAttribute('data-text', text);
     textBox.style.left = x + 'px';
     textBox.style.top = y + 'px';
     
-    textBox.innerHTML += `
-        <div class="text-box-controls">
+    textBox.innerHTML = `${text}<div class="text-box-controls">
+            <button class="text-box-btn edit-btn" title="Edit"><i class="fa-solid fa-pen"></i></button>
             <button class="text-box-btn delete-box-btn" title="Delete"><i class="fa-solid fa-trash"></i></button>
-        </div>
-    `;
+        </div>`;
     
     textBoxesContainer.appendChild(textBox);
     setupTextBoxInteraction(textBox);
@@ -422,55 +553,147 @@ function setupTextBoxInteraction(textBox) {
         textBox.classList.remove('dragging');
     });
     
+    textBox.querySelector('.edit-btn').addEventListener('click', () => {
+        editingTextBox = textBox;
+        editTextInput.value = textBox.getAttribute('data-text');
+        editTextModal.style.display = 'flex';
+        editTextInput.focus();
+    });
+    
     textBox.querySelector('.delete-box-btn').addEventListener('click', () => {
         textBox.remove();
     });
 }
 
-// --- Add Panel Functionality ---
-const panelModal = document.getElementById('panel-modal');
-const panelNameInput = document.getElementById('panel-name-input');
-const navContainer = document.getElementById('nav-container');
+// --- Equation Tool ---
+function showEquationModal() {
+    const equationModal = document.getElementById('equation-modal');
+    equationModal.style.display = 'flex';
+    
+    if (!geogebraApp) {
+        const parameters = {
+            "appName": "graphing",
+            "width": 800,
+            "height": 600,
+            "showToolBar": true,
+            "showAlgebraInput": true,
+            "showMenuBar": false,
+            "showResetIcon": true,
+            "enableLabelDrags": false,
+            "enableShiftDragZoom": true,
+            "enableRightClick": false,
+            "errorDialogsActive": false,
+            "useBrowserForJS": false,
+            "allowStyleBar": true,
+            "appletOnLoad": function(api) {
+                geogebraApp = api;
+            }
+        };
+        const appletElement = document.getElementById('geogebra-applet');
+        GGBApplet = window.GGBApplet || new window.GGBApplet(parameters, true);
+        GGBApplet.inject(appletElement);
+    }
+}
 
-document.getElementById('btn-add-panel').addEventListener('click', () => {
-    panelNameInput.value = '';
-    panelModal.style.display = 'flex';
-    panelNameInput.focus();
+document.getElementById('equation-modal-save').addEventListener('click', () => {
+    if (geogebraApp) {
+        const svg = geogebraApp.getPNGBase64(1, true, 300);
+        const eqContainer = document.createElement('div');
+        eqContainer.className = 'equation-item';
+        eqContainer.style.left = '100px';
+        eqContainer.style.top = '100px';
+        eqContainer.innerHTML = `<img src="data:image/png;base64,${svg}" alt="Equation"><div class="equation-controls">
+            <button class="eq-btn delete-eq-btn" title="Delete"><i class="fa-solid fa-trash"></i></button>
+        </div>`;
+        document.getElementById('equation-container').appendChild(eqContainer);
+        setupEquationInteraction(eqContainer);
+    }
+    document.getElementById('equation-modal').style.display = 'none';
 });
 
-document.getElementById('panel-modal-save').addEventListener('click', () => {
-    const panelName = panelNameInput.value.trim();
-    if (panelName) {
-        createNewPanel(panelName);
-        panelModal.style.display = 'none';
+document.getElementById('equation-modal-cancel').addEventListener('click', () => {
+    document.getElementById('equation-modal').style.display = 'none';
+});
+
+function setupEquationInteraction(eqContainer) {
+    let isDragging = false;
+    let offsetX, offsetY;
+    
+    eqContainer.addEventListener('mousedown', (e) => {
+        if (e.target.closest('.equation-controls')) return;
+        if (currentTool !== 'move') return;
+        
+        isDragging = true;
+        offsetX = e.clientX - eqContainer.offsetLeft;
+        offsetY = e.clientY - eqContainer.offsetTop;
+    });
+    
+    document.addEventListener('mousemove', (e) => {
+        if (isDragging) {
+            eqContainer.style.left = (e.clientX - offsetX) + 'px';
+            eqContainer.style.top = (e.clientY - offsetY) + 'px';
+        }
+    });
+    
+    document.addEventListener('mouseup', () => {
+        isDragging = false;
+    });
+    
+    eqContainer.querySelector('.delete-eq-btn').addEventListener('click', () => {
+        eqContainer.remove();
+    });
+}
+
+// --- Add Subpage Functionality ---
+const subpageModal = document.getElementById('subpage-modal');
+const subpageNameInput = document.getElementById('subpage-name-input');
+let currentTabParent = null;
+
+document.querySelectorAll('.add-subpage-btn').forEach((btn, index) => {
+    btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        currentTabParent = btn.previousElementSibling;
+        subpageNameInput.value = '';
+        subpageModal.style.display = 'flex';
+        subpageNameInput.focus();
+    });
+});
+
+document.getElementById('subpage-modal-save').addEventListener('click', () => {
+    const subpageName = subpageNameInput.value.trim();
+    if (subpageName && currentTabParent) {
+        createSubpage(subpageName, currentTabParent);
+        subpageModal.style.display = 'none';
     }
 });
 
-document.getElementById('panel-modal-cancel').addEventListener('click', () => {
-    panelModal.style.display = 'none';
+document.getElementById('subpage-modal-cancel').addEventListener('click', () => {
+    subpageModal.style.display = 'none';
 });
 
-function createNewPanel(name) {
-    const panelId = 'panel-' + Date.now();
-    lessonDatabase[panelId] = {
-        intro: [`<h3>${name}</h3><p>Custom panel created for class.</p>`]
-    };
+function createSubpage(name, parentBtn) {
+    const tabId = 'tab-' + Date.now();
+    const parentTab = parentBtn.getAttribute('data-target');
+    const lessonKey = 'day2';
     
-    const btn = document.createElement('button');
-    btn.className = 'nav-btn';
-    btn.setAttribute('data-target', 'intro');
-    btn.innerHTML = `<i class="fa-solid fa-sticky-note"></i> ${name}`;
+    if (!lessonDatabase[lessonKey][tabId]) {
+        lessonDatabase[lessonKey][tabId] = [`<h3>${name}</h3><p>Custom page created for your notes.</p>`];
+    }
     
-    btn.addEventListener('click', (e) => {
-        currentLesson = panelId;
-        currentTab = 'intro';
-        currentPageIndex = 0;
+    const newBtn = document.createElement('button');
+    newBtn.className = 'nav-btn';
+    newBtn.setAttribute('data-target', tabId);
+    newBtn.innerHTML = `<i class="fa-solid fa-file-lines"></i> ${name}`;
+    
+    newBtn.addEventListener('click', (e) => {
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         e.currentTarget.classList.add('active');
+        currentTab = tabId;
+        currentPageIndex = 0;
         loadContent();
     });
     
-    navContainer.appendChild(btn);
+    parentBtn.parentElement.appendChild(newBtn);
 }
 
 // --- Download / Screenshot Logic ---
@@ -496,8 +719,14 @@ document.addEventListener('click', (e) => {
     if (e.target === textModal) {
         textModal.style.display = 'none';
     }
-    if (e.target === panelModal) {
-        panelModal.style.display = 'none';
+    if (e.target === editTextModal) {
+        editTextModal.style.display = 'none';
+    }
+    if (e.target === subpageModal) {
+        subpageModal.style.display = 'none';
+    }
+    if (e.target === document.getElementById('equation-modal')) {
+        document.getElementById('equation-modal').style.display = 'none';
     }
 });
 
@@ -505,6 +734,8 @@ document.addEventListener('click', (e) => {
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
         textModal.style.display = 'none';
-        panelModal.style.display = 'none';
+        editTextModal.style.display = 'none';
+        subpageModal.style.display = 'none';
+        document.getElementById('equation-modal').style.display = 'none';
     }
 });
