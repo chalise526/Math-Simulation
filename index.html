@@ -28,36 +28,54 @@
             <h2>Gaindakot Municipality</h2>
         </div>
         <div class="toolbar">
+            <button id="btn-move" class="tool-btn" title="Move Tool"><i class="fa-solid fa-arrows-alt"></i> Move</button>
             <button id="btn-draw" class="tool-btn active"><i class="fa-solid fa-pen"></i> Pen</button>
+            <button id="btn-type" class="tool-btn"><i class="fa-solid fa-keyboard"></i> Type</button>
             <button id="btn-erase" class="tool-btn"><i class="fa-solid fa-eraser"></i> Eraser</button>
+            <button id="btn-photo" class="tool-btn"><i class="fa-solid fa-image"></i> Photo</button>
             <button id="btn-clear" class="tool-btn"><i class="fa-solid fa-trash-can"></i> Clear</button>
             <button id="btn-download" class="tool-btn download-btn"><i class="fa-solid fa-download"></i> Save</button>
             
             <div class="history-wrapper">
                 <i class="fa-solid fa-clock-rotate-left"></i>
                 <select id="lesson-history" class="history-dropdown">
+                    <option value="blank">📄 Blank Page</option>
                     <option value="day2">Day 2: Statistics (Mode)</option>
                     <option value="day1">Day 1: Geometry (Heron's Formula)</option>
                 </select>
             </div>
         </div>
+        <!-- Hidden file input for photo upload -->
+        <input type="file" id="photo-input" accept="image/*" style="display:none;">
     </header>
 
     <div class="main-container">
         <!-- Sidebar Navigation -->
         <aside class="sidebar">
-            <button class="nav-btn active" data-target="intro"><i class="fa-solid fa-info-circle"></i> परिचय (Intro)</button>
-            <button class="nav-btn" data-target="concept"><i class="fa-solid fa-lightbulb"></i> अवधारणा (Concept)</button>
-            <button class="nav-btn" data-target="formula"><i class="fa-solid fa-square-root-variable"></i> महत्वपूर्ण सुत्रहरू (Formulas)</button>
-            <button class="nav-btn" data-target="activities"><i class="fa-solid fa-users-gear"></i> क्रियाकलाप (Activities)</button>
-            <button class="nav-btn" data-target="examples"><i class="fa-solid fa-chalkboard-user"></i> उदाहरण (Examples)</button>
-            <button class="nav-btn" data-target="practice"><i class="fa-solid fa-pencil"></i> अभ्यास (Practice)</button>
-            <button class="nav-btn" data-target="quiz"><i class="fa-solid fa-clipboard-question"></i> हाजिरी जवाफ (Quiz)</button>
+            <div class="sidebar-header">
+                <h3>Lessons</h3>
+                <button id="btn-add-panel" class="add-panel-btn" title="Add New Panel"><i class="fa-solid fa-plus"></i></button>
+            </div>
+            <div id="nav-container" class="nav-container">
+                <button class="nav-btn active" data-target="intro"><i class="fa-solid fa-info-circle"></i> परिचय (Intro)</button>
+                <button class="nav-btn" data-target="concept"><i class="fa-solid fa-lightbulb"></i> अवधारणा (Concept)</button>
+                <button class="nav-btn" data-target="formula"><i class="fa-solid fa-square-root-variable"></i> महत्वपूर्ण सुत्रहरू (Formulas)</button>
+                <button class="nav-btn" data-target="activities"><i class="fa-solid fa-users-gear"></i> क्रियाकलाप (Activities)</button>
+                <button class="nav-btn" data-target="examples"><i class="fa-solid fa-chalkboard-user"></i> उदाहरण (Examples)</button>
+                <button class="nav-btn" data-target="practice"><i class="fa-solid fa-pencil"></i> अभ्यास (Practice)</button>
+                <button class="nav-btn" data-target="quiz"><i class="fa-solid fa-clipboard-question"></i> हाजिरी जवाफ (Quiz)</button>
+            </div>
         </aside>
 
         <!-- Content Stage & Drawing Canvas -->
         <main class="content-stage" id="export-area">
             <canvas id="drawing-board"></canvas>
+            
+            <!-- Photo Container -->
+            <div id="photos-container" class="photos-container"></div>
+            
+            <!-- Text Box Container -->
+            <div id="text-boxes-container" class="text-boxes-container"></div>
             
             <div class="lesson-container">
                 <div id="lesson-content" class="lesson-content">
@@ -72,6 +90,29 @@
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- Text Input Modal -->
+    <div id="text-modal" class="text-modal" style="display:none;">
+        <div class="text-modal-content">
+            <textarea id="text-input" class="text-input" placeholder="Enter your text here..."></textarea>
+            <div class="text-modal-buttons">
+                <button id="text-modal-save" class="modal-btn save-btn">Save</button>
+                <button id="text-modal-cancel" class="modal-btn cancel-btn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Panel Modal -->
+    <div id="panel-modal" class="panel-modal" style="display:none;">
+        <div class="panel-modal-content">
+            <h3>Create New Panel</h3>
+            <input type="text" id="panel-name-input" class="panel-input" placeholder="Enter panel name (e.g., Notes)">
+            <div class="panel-modal-buttons">
+                <button id="panel-modal-save" class="modal-btn save-btn">Create</button>
+                <button id="panel-modal-cancel" class="modal-btn cancel-btn">Cancel</button>
+            </div>
+        </div>
     </div>
 
     <script src="script.js"></script>
