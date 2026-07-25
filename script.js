@@ -36,7 +36,7 @@ const lessonDatabase = {
 };
 
 // --- Navigation & Pagination Logic ---
-let currentLesson = 'blank';
+let currentLesson = 'day2';
 let currentTab = 'intro';
 let currentPageIndex = 0;
 let currentTabContentArray = [];
