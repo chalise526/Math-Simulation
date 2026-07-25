@@ -8,18 +8,21 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
-    
-    <!-- Load MathJax for Math Formulas -->
+
+    <!-- Load MathJax for Math Formulas / LaTeX equation tool -->
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+            svg: { fontCache: 'global' }
+        };
+    </script>
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    
-    <!-- Load GeoGebra API -->
-    <script src="https://www.geogebra.org/apps/deployggb.js"></script>
-    
-    <!-- Load html2canvas for Download Feature -->
+
+    <!-- Load html2canvas for PNG export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    
-    <!-- Load jsPDF for PDF generation -->
+
+    <!-- Load html2pdf for real PDF export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
@@ -41,12 +44,15 @@
             <button id="btn-equation" class="tool-btn"><i class="fa-solid fa-function"></i> Equation</button>
             <button id="btn-erase" class="tool-btn"><i class="fa-solid fa-eraser"></i> Eraser</button>
             <button id="btn-photo" class="tool-btn"><i class="fa-solid fa-image"></i> Photo</button>
-           -- Add this button in the toolbar section of your top-header -->
-<button id="btn-expand" class="tool-btn" title="Expand Canvas"><i class="fa-solid fa-maximize"></i> Expand</button>
-<button id="btn-clear" class="tool-btn"><i class="fa-solid fa-trash-can"></i> Clear</button>
-<button id="btn-download" class="tool-btn download-btn"><i class="fa-solid fa-download"></i> Save</button>
+            <button id="btn-clear" class="tool-btn"><i class="fa-solid fa-trash-can"></i> Clear</button>
+            <span class="toolbar-divider"></span>
+            <button id="btn-download" class="tool-btn download-btn" title="Save current page as PNG"><i class="fa-solid fa-image"></i> PNG</button>
+            <button id="btn-pdf" class="tool-btn pdf-export-btn" title="Export current page as PDF"><i class="fa-solid fa-file-pdf"></i> PDF</button>
+            <button id="btn-backup" class="tool-btn backup-btn" title="Download a full backup of all lessons"><i class="fa-solid fa-cloud-arrow-down"></i> Backup</button>
+            <button id="btn-restore" class="tool-btn restore-btn" title="Restore lessons from a backup file"><i class="fa-solid fa-cloud-arrow-up"></i> Restore</button>
         </div>
         <input type="file" id="photo-input" accept="image/*" style="display:none;">
+        <input type="file" id="restore-input" accept="application/json" style="display:none;">
     </header>
 
     <!-- Filter Bar -->
@@ -62,7 +68,7 @@
                 <option value="class10">कक्षा १० (Class 10)</option>
             </select>
         </div>
-        
+
         <div class="filter-group">
             <label><i class="fa-solid fa-layer-group"></i> एकाई (Unit)</label>
             <select id="unit-filter">
@@ -75,12 +81,12 @@
                 <option value="unit6">सम्भाव्यता (Probability)</option>
             </select>
         </div>
-        
+
         <div class="filter-group">
             <label><i class="fa-solid fa-heading"></i> शीर्षक (Title)</label>
             <input type="text" id="title-filter" placeholder="Search topic...">
         </div>
-        
+
         <div class="filter-group">
             <label><i class="fa-solid fa-calendar"></i> दिन (Day)</label>
             <select id="day-filter">
@@ -138,6 +144,7 @@
                         <option value="3" selected>Normal</option>
                         <option value="5">Medium</option>
                         <option value="8">Thick</option>
+                        <option value="14">Highlighter</option>
                     </select>
                 </div>
             </div>
@@ -145,12 +152,24 @@
             <div class="tool-group" id="shape-tools" style="display: none;">
                 <h4>Math Shapes</h4>
                 <div class="shape-grid">
-                    <button class="shape-btn active" data-shape="rectangle" title="Rectangle"><i class="fa-solid fa-rectangle"></i></button>
+                    <button class="shape-btn active" data-shape="rectangle" title="Rectangle"><i class="fa-solid fa-square"></i></button>
+                    <button class="shape-btn" data-shape="square" title="Square"><i class="fa-regular fa-square"></i></button>
                     <button class="shape-btn" data-shape="circle" title="Circle"><i class="fa-solid fa-circle"></i></button>
-                    <button class="shape-btn" data-shape="triangle" title="Triangle"><i class="fa-solid fa-play"></i></button>
+                    <button class="shape-btn" data-shape="ellipse" title="Ellipse"><i class="fa-regular fa-circle" style="transform:scaleX(1.4);display:inline-block;"></i></button>
+                    <button class="shape-btn" data-shape="triangle" title="Triangle"><i class="fa-solid fa-play" style="transform:rotate(-90deg);display:inline-block;"></i></button>
+                    <button class="shape-btn" data-shape="right-triangle" title="Right Triangle"><i class="fa-solid fa-caret-up"></i></button>
                     <button class="shape-btn" data-shape="line" title="Line"><i class="fa-solid fa-minus"></i></button>
                     <button class="shape-btn" data-shape="arrow" title="Arrow"><i class="fa-solid fa-arrow-right"></i></button>
+                    <button class="shape-btn" data-shape="double-arrow" title="Double Arrow"><i class="fa-solid fa-arrows-left-right"></i></button>
                     <button class="shape-btn" data-shape="parallelogram" title="Parallelogram"><i class="fa-solid fa-vector-square"></i></button>
+                    <button class="shape-btn" data-shape="rhombus" title="Rhombus"><i class="fa-solid fa-gem"></i></button>
+                    <button class="shape-btn" data-shape="trapezoid" title="Trapezoid"><i class="fa-solid fa-draw-polygon"></i></button>
+                    <button class="shape-btn" data-shape="pentagon" title="Pentagon">⬠</button>
+                    <button class="shape-btn" data-shape="hexagon" title="Hexagon">⬡</button>
+                    <button class="shape-btn" data-shape="star" title="Star"><i class="fa-solid fa-star"></i></button>
+                    <button class="shape-btn" data-shape="angle" title="Angle Marker"><i class="fa-solid fa-ruler-combined"></i></button>
+                    <button class="shape-btn" data-shape="axes" title="Coordinate Axes"><i class="fa-solid fa-arrows-to-dot"></i></button>
+                    <button class="shape-btn" data-shape="number-line" title="Number Line"><i class="fa-solid fa-ruler-horizontal"></i></button>
                 </div>
                 <p class="field-hint shape-hint">Click and drag on the board to draw the selected shape.</p>
             </div>
@@ -160,15 +179,18 @@
         <main class="content-stage" id="export-area">
             <canvas id="drawing-board"></canvas>
             <canvas id="shape-preview-board"></canvas>
-            
+
             <div id="photos-container" class="photos-container"></div>
             <div id="text-boxes-container" class="text-boxes-container"></div>
             <div id="equation-container" class="equation-container"></div>
-            
+
             <div class="lesson-container">
                 <div class="lesson-toolbar">
                     <span id="current-tab-label" class="current-tab-label"><i class="fa-solid fa-info-circle"></i> परिचय (Intro)</span>
-                    <button id="btn-add-page" class="add-page-btn" title="Add or edit pages and PDFs"><i class="fa-solid fa-plus"></i> Add Page / Edit PDF</button>
+                    <div style="display:flex; gap:8px;">
+                        <button id="btn-fullscreen" class="fullscreen-btn" title="Toggle fullscreen canvas"><i class="fa-solid fa-expand"></i> Fullscreen</button>
+                        <button id="btn-add-page" class="add-page-btn" title="Add or edit pages and PDFs"><i class="fa-solid fa-plus"></i> Add Page / Edit PDF</button>
+                    </div>
                 </div>
 
                 <div id="lesson-content" class="lesson-content">
@@ -200,7 +222,34 @@
     <!-- Text Input Modal -->
     <div id="text-modal" class="text-modal" style="display:none;">
         <div class="text-modal-content">
-            <h3>Add Text</h3>
+            <h3 style="margin-bottom:10px;">Add Text</h3>
+            <div class="text-format-toolbar" id="text-format-toolbar">
+                <select id="text-font-family">
+                    <option value="Poppins, sans-serif">Poppins</option>
+                    <option value="Arial, sans-serif">Arial</option>
+                    <option value="Georgia, serif">Georgia</option>
+                    <option value="'Times New Roman', serif">Times New Roman</option>
+                    <option value="'Courier New', monospace">Courier New</option>
+                    <option value="'Comic Sans MS', cursive">Comic Sans</option>
+                </select>
+                <select id="text-font-size">
+                    <option value="14">14</option>
+                    <option value="16" selected>16</option>
+                    <option value="18">18</option>
+                    <option value="20">20</option>
+                    <option value="24">24</option>
+                    <option value="28">28</option>
+                    <option value="34">34</option>
+                </select>
+                <button type="button" class="fmt-btn" id="text-bold-btn" title="Bold"><i class="fa-solid fa-bold"></i></button>
+                <button type="button" class="fmt-btn" id="text-italic-btn" title="Italic"><i class="fa-solid fa-italic"></i></button>
+                <button type="button" class="fmt-btn" id="text-underline-btn" title="Underline"><i class="fa-solid fa-underline"></i></button>
+                <button type="button" class="fmt-btn" id="text-align-left" title="Align Left"><i class="fa-solid fa-align-left"></i></button>
+                <button type="button" class="fmt-btn" id="text-align-center" title="Align Center"><i class="fa-solid fa-align-center"></i></button>
+                <button type="button" class="fmt-btn" id="text-align-right" title="Align Right"><i class="fa-solid fa-align-right"></i></button>
+                <input type="color" id="text-color-input" class="fmt-color-input" value="#1f2937" title="Text Color">
+                <input type="color" id="text-bg-input" class="fmt-color-input" value="#ffffff" title="Highlight Color">
+            </div>
             <textarea id="text-input" class="text-input" placeholder="Enter your text here..."></textarea>
             <div class="text-modal-buttons">
                 <button id="text-modal-save" class="modal-btn save-btn">Save</button>
@@ -212,7 +261,34 @@
     <!-- Edit Text Modal -->
     <div id="edit-text-modal" class="text-modal" style="display:none;">
         <div class="text-modal-content">
-            <h3>Edit Text</h3>
+            <h3 style="margin-bottom:10px;">Edit Text</h3>
+            <div class="text-format-toolbar" id="edit-text-format-toolbar">
+                <select id="edit-text-font-family">
+                    <option value="Poppins, sans-serif">Poppins</option>
+                    <option value="Arial, sans-serif">Arial</option>
+                    <option value="Georgia, serif">Georgia</option>
+                    <option value="'Times New Roman', serif">Times New Roman</option>
+                    <option value="'Courier New', monospace">Courier New</option>
+                    <option value="'Comic Sans MS', cursive">Comic Sans</option>
+                </select>
+                <select id="edit-text-font-size">
+                    <option value="14">14</option>
+                    <option value="16" selected>16</option>
+                    <option value="18">18</option>
+                    <option value="20">20</option>
+                    <option value="24">24</option>
+                    <option value="28">28</option>
+                    <option value="34">34</option>
+                </select>
+                <button type="button" class="fmt-btn" id="edit-text-bold-btn" title="Bold"><i class="fa-solid fa-bold"></i></button>
+                <button type="button" class="fmt-btn" id="edit-text-italic-btn" title="Italic"><i class="fa-solid fa-italic"></i></button>
+                <button type="button" class="fmt-btn" id="edit-text-underline-btn" title="Underline"><i class="fa-solid fa-underline"></i></button>
+                <button type="button" class="fmt-btn" id="edit-text-align-left" title="Align Left"><i class="fa-solid fa-align-left"></i></button>
+                <button type="button" class="fmt-btn" id="edit-text-align-center" title="Align Center"><i class="fa-solid fa-align-center"></i></button>
+                <button type="button" class="fmt-btn" id="edit-text-align-right" title="Align Right"><i class="fa-solid fa-align-right"></i></button>
+                <input type="color" id="edit-text-color-input" class="fmt-color-input" value="#1f2937" title="Text Color">
+                <input type="color" id="edit-text-bg-input" class="fmt-color-input" value="#ffffff" title="Highlight Color">
+            </div>
             <textarea id="edit-text-input" class="text-input" placeholder="Edit your text..."></textarea>
             <div class="text-modal-buttons">
                 <button id="edit-text-save" class="modal-btn save-btn">Save</button>
@@ -221,11 +297,36 @@
         </div>
     </div>
 
-    <!-- Equation Modal -->
+    <!-- Equation Modal: LaTeX Tool -->
     <div id="equation-modal" class="text-modal" style="display:none;">
         <div class="equation-modal-content">
-            <h3>Add Mathematical Equation</h3>
-            <div id="geogebra-applet" class="geogebra-applet"></div>
+            <h3 style="margin-bottom:6px;">Add Mathematical Equation (LaTeX)</h3>
+            <p class="field-hint" style="margin-bottom:10px;">Type LaTeX below, or tap a symbol to insert it. Wrap fractions/sums/integrals with the buttons for quick entry.</p>
+            <div class="latex-symbol-grid">
+                <button type="button" class="latex-sym-btn" data-insert="\frac{§}{}">a/b</button>
+                <button type="button" class="latex-sym-btn" data-insert="\sqrt{§}">√</button>
+                <button type="button" class="latex-sym-btn" data-insert="\sqrt[n]{§}">ⁿ√</button>
+                <button type="button" class="latex-sym-btn" data-insert="^{§}">xⁿ</button>
+                <button type="button" class="latex-sym-btn" data-insert="_{§}">xₙ</button>
+                <button type="button" class="latex-sym-btn" data-insert="\sum_{§}^{}">Σ</button>
+                <button type="button" class="latex-sym-btn" data-insert="\int_{§}^{}">∫</button>
+                <button type="button" class="latex-sym-btn" data-insert="\pi">π</button>
+                <button type="button" class="latex-sym-btn" data-insert="\theta">θ</button>
+                <button type="button" class="latex-sym-btn" data-insert="\alpha">α</button>
+                <button type="button" class="latex-sym-btn" data-insert="\beta">β</button>
+                <button type="button" class="latex-sym-btn" data-insert="\leq">≤</button>
+                <button type="button" class="latex-sym-btn" data-insert="\geq">≥</button>
+                <button type="button" class="latex-sym-btn" data-insert="\neq">≠</button>
+                <button type="button" class="latex-sym-btn" data-insert="\infty">∞</button>
+                <button type="button" class="latex-sym-btn" data-insert="\pm">±</button>
+                <button type="button" class="latex-sym-btn" data-insert="\times">×</button>
+                <button type="button" class="latex-sym-btn" data-insert="\div">÷</button>
+                <button type="button" class="latex-sym-btn" data-insert="\rightarrow">→</button>
+                <button type="button" class="latex-sym-btn" data-insert="\begin{bmatrix} § & \\ & \end{bmatrix}">Matrix</button>
+                <button type="button" class="latex-sym-btn" data-insert="\angle">∠</button>
+            </div>
+            <textarea id="equation-latex-input" placeholder="e.g. Area = \sqrt{s(s-a)(s-b)(s-c)}"></textarea>
+            <div id="equation-live-preview"><em>Your equation will appear here...</em></div>
             <div class="equation-modal-buttons">
                 <button id="equation-modal-save" class="modal-btn save-btn">Insert</button>
                 <button id="equation-modal-cancel" class="modal-btn cancel-btn">Cancel</button>
@@ -233,75 +334,19 @@
         </div>
     </div>
 
-    <!-- Add Page / Edit PDF Editor Modal -->
+    <!-- Add Page / Edit PDF Editor Modal: Section Builder -->
     <div id="page-editor-modal" class="text-modal" style="display:none;">
         <div class="panel-modal-content page-editor-content">
             <h3 id="page-editor-title">Add Page</h3>
+            <p class="field-hint" style="margin:6px 0 12px;">Build this page from one or more sections. Add as many as you need — text, LaTeX formulas, or images — they'll be stacked in order.</p>
 
-            <!-- 3 Options Selector -->
-            <div class="form-group">
-                <label><i class="fa-solid fa-layer-group"></i> Choose Content Type:</label>
-                <div class="page-option-toggle">
-                    <label class="option-pill">
-                        <input type="radio" name="pageContentType" value="standard" checked> Standard Text
-                    </label>
-                    <label class="option-pill">
-                        <input type="radio" name="pageContentType" value="latex"> LaTeX Code
-                    </label>
-                    <label class="option-pill">
-                        <input type="radio" name="pageContentType" value="photo"> Photo
-                    </label>
-                </div>
-            </div>
+            <div id="page-sections-list"></div>
+            <button type="button" id="add-section-btn" class="add-section-btn"><i class="fa-solid fa-plus"></i> Add Section</button>
 
-            <!-- Option 1: Standard text fields -->
-            <div id="generic-page-fields" class="content-option-block">
-                <div class="form-group">
-                    <label>Page Heading (optional):</label>
-                    <input type="text" id="generic-page-heading" class="panel-input" placeholder="e.g., Key Concept">
-                </div>
-                <div class="form-group">
-                    <label>Content (optional):</label>
-                    <textarea id="generic-page-content" class="text-input" placeholder="Write lesson notes or content..."></textarea>
-                </div>
-            </div>
-
-            <!-- Option 2: Formula/LaTeX fields -->
-            <div id="formula-page-fields" class="content-option-block" style="display:none;">
-                <div class="form-group">
-                    <label>Formula Name (optional):</label>
-                    <input type="text" id="formula-page-heading" class="panel-input" placeholder="e.g., Area of a Triangle">
-                </div>
-                <div class="form-group">
-                    <label>LaTeX Code:</label>
-                    <textarea id="formula-latex-input" class="text-input latex-code" placeholder="e.g., Area = \sqrt{s(s-a)(s-b)(s-c)}" style="min-height: 80px;"></textarea>
-                </div>
-                <div class="form-group">
-                    <label>Live Preview:</label>
-                    <div id="formula-preview" class="formula-preview"><em>Your formula will appear here...</em></div>
-                </div>
-            </div>
-
-            <!-- Option 3: Photo fields -->
-            <div id="photo-page-fields" class="content-option-block" style="display:none;">
-                <div class="form-group">
-                    <label>Image Heading / Caption (optional):</label>
-                    <input type="text" id="photo-page-heading" class="panel-input" placeholder="e.g., Diagram Figure 1">
-                </div>
-                <div class="form-group">
-                    <label>Upload Image File:</label>
-                    <input type="file" id="photo-page-file" class="panel-input" accept="image/*">
-                </div>
-                <div class="form-group">
-                    <label>Or Image URL:</label>
-                    <input type="text" id="photo-page-url" class="panel-input" placeholder="https://example.com/image.png">
-                </div>
-            </div>
-
-            <!-- PDF Page Settings -->
+            <!-- PDF Page Settings (applies to whole tab) -->
             <hr style="margin: 15px 0; border: none; border-top: 1px solid #e5e7eb;">
             <div class="form-group">
-                <label><i class="fa-solid fa-file-pdf"></i> PDF File / URL:</label>
+                <label><i class="fa-solid fa-file-pdf"></i> PDF File / URL (for this tab):</label>
                 <input type="text" id="pdf-url-input" class="panel-input" placeholder="e.g., pdfs/sample.pdf or https://example.com/doc.pdf">
             </div>
             <div class="form-group">
@@ -310,11 +355,66 @@
             </div>
 
             <div class="panel-modal-buttons">
-                <button id="page-editor-save" class="modal-btn save-btn">Save Changes</button>
+                <button id="page-editor-save" class="modal-btn save-btn">Save Page</button>
                 <button id="page-editor-cancel" class="modal-btn cancel-btn">Cancel</button>
             </div>
         </div>
     </div>
+
+    <!-- Section block template (cloned via JS) -->
+    <template id="section-block-template">
+        <div class="section-block" data-section-id="">
+            <div class="section-block-header">
+                <select class="section-type-select">
+                    <option value="standard">📝 Heading & Text</option>
+                    <option value="latex">∑ LaTeX Formula</option>
+                    <option value="photo">🖼️ Image</option>
+                </select>
+                <button type="button" class="section-remove-btn" title="Remove section"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="content-option-block section-standard-fields">
+                <div class="form-group">
+                    <label>Heading (optional):</label>
+                    <input type="text" class="panel-input section-heading" placeholder="e.g., Key Concept">
+                </div>
+                <div class="form-group">
+                    <label>Content (optional):</label>
+                    <textarea class="text-input section-content" placeholder="Write lesson notes or content..."></textarea>
+                </div>
+            </div>
+
+            <div class="content-option-block section-latex-fields" style="display:none;">
+                <div class="form-group">
+                    <label>Formula Name (optional):</label>
+                    <input type="text" class="panel-input section-formula-heading" placeholder="e.g., Area of a Triangle">
+                </div>
+                <div class="form-group">
+                    <label>LaTeX Code:</label>
+                    <textarea class="text-input section-formula-latex" style="min-height: 70px; font-family: 'Courier New', monospace;" placeholder="e.g., Area = \sqrt{s(s-a)(s-b)(s-c)}"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Live Preview:</label>
+                    <div class="formula-preview section-formula-preview"><em>Your formula will appear here...</em></div>
+                </div>
+            </div>
+
+            <div class="content-option-block section-photo-fields" style="display:none;">
+                <div class="form-group">
+                    <label>Image Heading / Caption (optional):</label>
+                    <input type="text" class="panel-input section-photo-heading" placeholder="e.g., Diagram Figure 1">
+                </div>
+                <div class="form-group">
+                    <label>Upload Image File:</label>
+                    <input type="file" class="panel-input section-photo-file" accept="image/*">
+                </div>
+                <div class="form-group">
+                    <label>Or Image URL:</label>
+                    <input type="text" class="panel-input section-photo-url" placeholder="https://example.com/image.png">
+                </div>
+            </div>
+        </div>
+    </template>
 
     <!-- Add Reference Modal -->
     <div id="reference-modal" class="text-modal" style="display:none;">
@@ -346,6 +446,8 @@
             </div>
         </div>
     </div>
+
+    <div id="toast-container"></div>
 
     <script src="script.js"></script>
 </body>
