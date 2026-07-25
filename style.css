@@ -736,3 +736,19 @@ body {
     font-size: 0.8rem;
     color: #6b7280;
 }
+/* --- Expanded Canvas Mode --- */
+body.canvas-expanded .filter-bar,
+body.canvas-expanded .sidebar,
+body.canvas-expanded .references-section {
+    display: none !important;
+}
+
+body.canvas-expanded .main-container {
+    height: calc(100vh - 85px); /* Takes up the space of the hidden filter bar and footer */
+}
+
+/* Ensure the drawing tools panel stays visible but hugs the left side */
+body.canvas-expanded .drawing-tools-panel {
+    border-left: none;
+    border-right: 1px solid #e5e7eb;
+}
