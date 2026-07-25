@@ -133,7 +133,7 @@ body {
 }
 
 .filter-group select,
-.filter-group input[type="date"] {
+.filter-group input[type="text"] {
     padding: 6px 10px;
     border: 1px solid #e5e7eb;
     border-radius: 6px;
@@ -145,7 +145,7 @@ body {
 }
 
 .filter-group select:hover,
-.filter-group input[type="date"]:hover {
+.filter-group input[type="text"]:hover {
     border-color: var(--primary);
     box-shadow: 0 0 5px rgba(30, 58, 138, 0.1);
 }
@@ -205,7 +205,7 @@ body {
     overflow: hidden;
 }
 
-/* Brilliant Sidebar */
+/* Sidebar */
 .sidebar {
     width: 250px;
     background-color: var(--sidebar-bg);
@@ -348,11 +348,6 @@ body {
     gap: 8px;
 }
 
-.shape-hint {
-    margin-top: 5px;
-    margin-bottom: 0;
-}
-
 .shape-btn {
     width: 100%;
     padding: 10px 8px;
@@ -389,7 +384,7 @@ body {
     background-color: #ffffff;
 }
 
-#drawing-board {
+#drawing-board, #shape-preview-board {
     position: absolute;
     top: 0;
     left: 0;
@@ -400,13 +395,7 @@ body {
 }
 
 #shape-preview-board {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
     z-index: 6;
-    pointer-events: none;
 }
 
 .lesson-container {
@@ -472,39 +461,30 @@ body {
     transform: translateY(-1px);
 }
 
-.page-editor-content {
-    width: 520px;
+/* PDF Embed Styling */
+.pdf-viewer-wrapper {
+    margin-top: 20px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #f8fafc;
 }
 
-.field-hint {
-    font-size: 0.78rem;
-    color: #6b7280;
-    margin-top: -10px;
-    margin-bottom: 15px;
+.pdf-badge {
+    background: #1e3a8a;
+    color: white;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-.field-hint a {
-    color: var(--primary);
-}
-
-.formula-preview {
-    background: linear-gradient(to right, #fffbeb, #fef3c7);
-    border-left: 5px solid var(--accent);
-    padding: 15px;
-    border-radius: 0 8px 8px 0;
-    min-height: 50px;
-    font-size: 1.1rem;
-    color: #6b7280;
-}
-
-.formula-box {
-    background: linear-gradient(to right, #fffbeb, #fef3c7);
-    border-left: 5px solid var(--accent);
-    padding: 20px;
-    margin: 20px 0;
-    border-radius: 0 8px 8px 0;
-    font-size: 1.2rem;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+.pdf-viewer-frame {
+    width: 100%;
+    height: 600px;
+    border: none;
+    display: block;
 }
 
 /* Pagination UI */
@@ -543,8 +523,8 @@ body {
     color: #4b5563;
 }
 
-/* Photo Container & Items */
-.photos-container {
+/* Photo Container & Text Boxes */
+.photos-container, .text-boxes-container, .equation-container {
     position: relative;
     z-index: 3;
     width: 100%;
@@ -552,7 +532,7 @@ body {
     pointer-events: auto;
 }
 
-.photo-item {
+.photo-item, .equation-item {
     position: absolute;
     min-width: 150px;
     min-height: 150px;
@@ -561,255 +541,15 @@ body {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     padding: 8px;
     cursor: move;
-    transition: box-shadow 0.3s ease;
-}
-
-.photo-item:hover {
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
-}
-
-.photo-item.dragging {
-    opacity: 0.9;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-}
-
-.photo-item img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 4px;
-    display: block;
-    pointer-events: none;
-    transition: transform 0.3s ease;
-}
-
-.photo-controls {
-    position: absolute;
-    top: 4px;
-    right: 4px;
-    display: flex;
-    gap: 4px;
-    background: rgba(0, 0, 0, 0.6);
-    padding: 4px;
-    border-radius: 4px;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.photo-item:hover .photo-controls {
-    opacity: 1;
-}
-
-.photo-btn {
-    background: white;
-    border: none;
-    width: 28px;
-    height: 28px;
-    border-radius: 4px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.75rem;
-    transition: all 0.2s;
-    color: var(--primary);
-}
-
-.photo-btn:hover {
-    background: var(--primary);
-    color: white;
-}
-
-.delete-btn {
-    background-color: #ef4444;
-    color: white;
-}
-
-.delete-btn:hover {
-    background-color: #dc2626;
-}
-
-.resize-btn {
-    background-color: var(--accent);
-    color: white;
-}
-
-.resize-btn:hover {
-    background-color: #d97706;
-}
-
-.rotate-btn {
-    background-color: #3b82f6;
-    color: white;
-}
-
-.rotate-btn:hover {
-    background-color: #2563eb;
-}
-
-/* Text Boxes Container */
-.text-boxes-container {
-    position: relative;
-    z-index: 4;
-    width: 100%;
-    height: 100%;
-    pointer-events: auto;
 }
 
 .text-box {
     position: absolute;
-    background: transparent;
-    border: none;
-    border-radius: 8px;
     padding: 12px;
     min-width: 150px;
-    min-height: 30px;
     cursor: move;
     font-size: 0.95rem;
-    word-wrap: break-word;
     white-space: pre-wrap;
-    transition: all 0.3s ease;
-    color: var(--text-dark);
-    font-weight: 500;
-    outline: 1px dashed transparent;
-}
-
-.text-box:hover {
-    outline: 1px dashed #bfdbfe;
-}
-
-.text-box.selected {
-    outline: 2px solid var(--accent);
-    box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
-}
-
-.text-box.dragging {
-    opacity: 0.9;
-    z-index: 10;
-}
-
-.text-box-controls {
-    position: absolute;
-    top: -32px;
-    right: 0;
-    display: flex;
-    gap: 4px;
-    background: var(--primary);
-    padding: 4px;
-    border-radius: 4px;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.text-box:hover .text-box-controls {
-    opacity: 1;
-}
-
-.text-box-btn {
-    background: white;
-    border: none;
-    width: 26px;
-    height: 26px;
-    border-radius: 3px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.7rem;
-    transition: all 0.2s;
-    color: var(--primary);
-}
-
-.text-box-btn:hover {
-    background: var(--accent);
-    color: white;
-}
-
-.delete-box-btn {
-    background-color: #ef4444;
-    color: white;
-}
-
-.delete-box-btn:hover {
-    background-color: #dc2626;
-}
-
-.edit-btn {
-    background-color: #3b82f6;
-    color: white;
-}
-
-.edit-btn:hover {
-    background-color: #2563eb;
-}
-
-/* Equation Container */
-.equation-container {
-    position: relative;
-    z-index: 4;
-    width: 100%;
-    height: 100%;
-    pointer-events: auto;
-}
-
-.equation-item {
-    position: absolute;
-    background: white;
-    border-radius: 8px;
-    padding: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    cursor: move;
-    transition: box-shadow 0.3s ease;
-}
-
-.equation-item:hover {
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
-}
-
-.equation-item img {
-    max-width: 100%;
-    height: auto;
-    display: block;
-}
-
-.equation-controls {
-    position: absolute;
-    top: 2px;
-    right: 2px;
-    display: flex;
-    gap: 4px;
-    background: rgba(0, 0, 0, 0.6);
-    padding: 2px;
-    border-radius: 3px;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.equation-item:hover .equation-controls {
-    opacity: 1;
-}
-
-.eq-btn {
-    background: white;
-    border: none;
-    width: 24px;
-    height: 24px;
-    border-radius: 3px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.65rem;
-    transition: all 0.2s;
-}
-
-.delete-eq-btn {
-    background-color: #ef4444;
-    color: white;
-}
-
-.delete-eq-btn:hover {
-    background-color: #dc2626;
 }
 
 /* References Section */
@@ -832,10 +572,6 @@ body {
 .references-header h3 {
     font-size: 0.95rem;
     color: var(--primary);
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
 }
 
 .add-ref-btn {
@@ -847,27 +583,12 @@ body {
     cursor: pointer;
     font-size: 0.85rem;
     font-weight: 600;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.add-ref-btn:hover {
-    background-color: #059669;
-    transform: scale(1.05);
 }
 
 .references-container {
     display: flex;
     gap: 12px;
     flex-wrap: wrap;
-}
-
-.no-references {
-    font-size: 0.85rem;
-    color: #9ca3af;
-    font-style: italic;
 }
 
 .reference-item {
@@ -878,7 +599,6 @@ body {
     padding: 8px 12px;
     border-radius: 6px;
     border: 1px solid #e5e7eb;
-    flex: 0 1 auto;
 }
 
 .reference-item a {
@@ -886,23 +606,6 @@ body {
     text-decoration: none;
     font-size: 0.85rem;
     font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    max-width: 150px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.reference-item a:hover {
-    color: #1e40af;
-    text-decoration: underline;
-}
-
-.reference-item .ref-icon {
-    font-size: 0.95rem;
 }
 
 .ref-delete-btn {
@@ -910,20 +613,9 @@ body {
     border: none;
     color: #ef4444;
     cursor: pointer;
-    font-size: 0.8rem;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
 }
 
-.ref-delete-btn:hover {
-    color: #dc2626;
-    transform: scale(1.15);
-}
-
-/* Modal Styles */
+/* Modals */
 .text-modal {
     position: fixed;
     top: 0;
@@ -937,7 +629,7 @@ body {
     z-index: 1000;
 }
 
-.text-modal-content {
+.text-modal-content, .panel-modal-content, .reference-modal-content, .equation-modal-content {
     background: white;
     padding: 30px;
     border-radius: 12px;
@@ -945,85 +637,6 @@ body {
     z-index: 1001;
     width: 500px;
     max-width: 90vw;
-}
-
-.text-modal-content h3 {
-    color: var(--primary);
-    margin-bottom: 15px;
-}
-
-.equation-modal-content {
-    background: white;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-    z-index: 1001;
-    width: 900px;
-    max-width: 90vw;
-    max-height: 90vh;
-    display: flex;
-    flex-direction: column;
-}
-
-.equation-modal-content h3 {
-    color: var(--primary);
-    margin-bottom: 15px;
-}
-
-.geogebra-applet {
-    width: 100%;
-    height: 500px;
-    margin-bottom: 15px;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-.panel-modal-content {
-    background: white;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-    z-index: 1001;
-    width: 400px;
-    max-width: 90vw;
-}
-
-.panel-modal-content h3 {
-    color: var(--primary);
-    margin-bottom: 20px;
-}
-
-.class-material-modal-content {
-    background: white;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-    z-index: 1001;
-    width: 500px;
-    max-width: 90vw;
-    max-height: 90vh;
-    overflow-y: auto;
-}
-
-.class-material-modal-content h3 {
-    color: var(--primary);
-    margin-bottom: 20px;
-}
-
-.reference-modal-content {
-    background: white;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-    z-index: 1001;
-    width: 450px;
-    max-width: 90vw;
-}
-
-.reference-modal-content h3 {
-    color: var(--primary);
-    margin-bottom: 20px;
 }
 
 .form-group {
@@ -1040,31 +653,21 @@ body {
 
 .text-input, .panel-input {
     width: 100%;
-    padding: 12px;
+    padding: 10px;
     border: 2px solid #e5e7eb;
     border-radius: 8px;
-    font-family: 'Poppins', sans-serif;
     font-size: 0.95rem;
-    resize: vertical;
-    min-height: 150px;
-    margin-bottom: 15px;
 }
 
 .panel-input {
-    min-height: auto;
     height: 40px;
 }
 
-.text-input:focus, .panel-input:focus {
-    outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
-}
-
-.text-modal-buttons, .panel-modal-buttons, .equation-modal-buttons {
+.panel-modal-buttons, .text-modal-buttons, .equation-modal-buttons {
     display: flex;
     gap: 10px;
     justify-content: flex-end;
+    margin-top: 15px;
 }
 
 .modal-btn {
@@ -1073,7 +676,6 @@ body {
     border-radius: 6px;
     cursor: pointer;
     font-weight: 600;
-    transition: all 0.2s;
 }
 
 .save-btn {
@@ -1081,60 +683,17 @@ body {
     color: white;
 }
 
-.save-btn:hover {
-    background-color: #059669;
-}
-
 .cancel-btn {
     background-color: #e5e7eb;
     color: var(--text-dark);
 }
 
-.cancel-btn:hover {
-    background-color: #d1d5db;
-}
-
-/* Responsive */
-@media (max-width: 1024px) {
-    .filter-bar {
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    .filter-group {
-        width: 100%;
-    }
-
-    .filter-group select,
-    .filter-group input[type="date"] {
-        width: 100%;
-    }
-}
-
-@media (max-width: 768px) {
-    .sidebar {
-        width: 200px;
-    }
-    
-    .drawing-tools-panel {
-        width: 150px;
-    }
-    
-    .content-stage {
-        padding: 15px;
-    }
-    
-    .lesson-container {
-        padding: 20px;
-    }
-
-    .filter-bar {
-        padding: 10px 15px;
-        gap: 10px;
-    }
-
-    .references-section {
-        max-height: 150px;
-        padding: 10px 15px;
-    }
+/* Footer */
+.footer {
+    text-align: center;
+    padding: 10px;
+    background-color: #ffffff;
+    border-top: 1px solid #e5e7eb;
+    font-size: 0.8rem;
+    color: #6b7280;
 }
