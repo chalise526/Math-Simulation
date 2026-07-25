@@ -236,8 +236,24 @@
         <div class="panel-modal-content page-editor-content">
             <h3 id="page-editor-title">Add Page</h3>
 
-            <!-- Generic content fields -->
-            <div id="generic-page-fields">
+            <!-- 3 Options Selector -->
+            <div class="form-group">
+                <label><i class="fa-solid fa-layer-group"></i> Choose Content Type:</label>
+                <div class="page-option-toggle">
+                    <label class="option-pill">
+                        <input type="radio" name="pageContentType" value="standard" checked> Standard Text
+                    </label>
+                    <label class="option-pill">
+                        <input type="radio" name="pageContentType" value="latex"> LaTeX Code
+                    </label>
+                    <label class="option-pill">
+                        <input type="radio" name="pageContentType" value="photo"> Photo
+                    </label>
+                </div>
+            </div>
+
+            <!-- Option 1: Standard text fields -->
+            <div id="generic-page-fields" class="content-option-block">
                 <div class="form-group">
                     <label>Page Heading (optional):</label>
                     <input type="text" id="generic-page-heading" class="panel-input" placeholder="e.g., Key Concept">
@@ -248,8 +264,8 @@
                 </div>
             </div>
 
-            <!-- Formula/LaTeX fields -->
-            <div id="formula-page-fields" style="display:none;">
+            <!-- Option 2: Formula/LaTeX fields -->
+            <div id="formula-page-fields" class="content-option-block" style="display:none;">
                 <div class="form-group">
                     <label>Formula Name (optional):</label>
                     <input type="text" id="formula-page-heading" class="panel-input" placeholder="e.g., Area of a Triangle">
@@ -261,6 +277,22 @@
                 <div class="form-group">
                     <label>Live Preview:</label>
                     <div id="formula-preview" class="formula-preview"><em>Your formula will appear here...</em></div>
+                </div>
+            </div>
+
+            <!-- Option 3: Photo fields -->
+            <div id="photo-page-fields" class="content-option-block" style="display:none;">
+                <div class="form-group">
+                    <label>Image Heading / Caption (optional):</label>
+                    <input type="text" id="photo-page-heading" class="panel-input" placeholder="e.g., Diagram Figure 1">
+                </div>
+                <div class="form-group">
+                    <label>Upload Image File:</label>
+                    <input type="file" id="photo-page-file" class="panel-input" accept="image/*">
+                </div>
+                <div class="form-group">
+                    <label>Or Image URL:</label>
+                    <input type="text" id="photo-page-url" class="panel-input" placeholder="https://example.com/image.png">
                 </div>
             </div>
 
