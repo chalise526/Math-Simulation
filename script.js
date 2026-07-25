@@ -1,7 +1,5 @@
 // --- Database of Daily Lessons ---
-// Each "day file" carries metadata for filtering (class, unit, day)
-// plus title, tab content, attached PDF details (pdfUrl, pageRange), and resources.
-const lessonDatabase = {
+const defaultLessonDatabase = {
     blank: {
         id: 'blank',
         class: '',
@@ -101,6 +99,30 @@ const lessonDatabase = {
     }
 };
 
+// --- Storage Keys for Persistence ---
+const DB_STORAGE_KEY = 'math_simulation_db_v1';
+const FILTER_STORAGE_KEY = 'math_simulation_filters_v1';
+
+// Load Database from LocalStorage or Default
+let lessonDatabase = loadSavedDatabase();
+
+function loadSavedDatabase() {
+    try {
+        const saved = localStorage.getItem(DB_STORAGE_KEY);
+        return saved ? JSON.parse(saved) : defaultLessonDatabase;
+    } catch(e) {
+        return defaultLessonDatabase;
+    }
+}
+
+function persistDatabase() {
+    try {
+        localStorage.setItem(DB_STORAGE_KEY, JSON.stringify(lessonDatabase));
+    } catch(e) {
+        console.error("Could not save to LocalStorage:", e);
+    }
+}
+
 // Helper: ensure tab structure exists
 function getTabData(lessonId, tabKey) {
     const lesson = lessonDatabase[lessonId];
@@ -109,7 +131,6 @@ function getTabData(lessonId, tabKey) {
     if (!lesson.tabs[tabKey]) {
         lesson.tabs[tabKey] = { content: ["<p>Content for this section is not uploaded yet.</p>"], pdfUrl: "", pageRange: "" };
     } else if (Array.isArray(lesson.tabs[tabKey])) {
-        // Migration helper if tab is array format
         lesson.tabs[tabKey] = { content: lesson.tabs[tabKey], pdfUrl: "", pageRange: "" };
     }
     return lesson.tabs[tabKey];
@@ -170,13 +191,23 @@ function loadContent() {
 
     // Append embedded PDF viewer if PDF URL and page range exist
     if (tabData.pdfUrl && tabData.pageRange) {
-        const startPage = tabData.pageRange.split('-')[0].trim();
+        // Calculate dynamic PDF page offset based on currentPageIndex if range provided
+        let targetPdfPage = 1;
+        if (tabData.pageRange.includes('-')) {
+            const parts = tabData.pageRange.split('-').map(p => parseInt(p.trim(), 10));
+            const startP = parts[0] || 1;
+            const endP = parts[1] || startP;
+            targetPdfPage = Math.min(startP + currentPageIndex, endP);
+        } else {
+            targetPdfPage = parseInt(tabData.pageRange.trim(), 10) || 1;
+        }
+
         htmlOutput += `
             <div class="pdf-viewer-wrapper">
                 <div class="pdf-badge">
-                    <i class="fa-solid fa-file-pdf"></i> Assigned PDF Range: <strong>Pages ${escapeHtml(tabData.pageRange)}</strong>
+                    <i class="fa-solid fa-file-pdf"></i> Assigned PDF Range: <strong>Pages ${escapeHtml(tabData.pageRange)}</strong> (Viewing Page ${targetPdfPage})
                 </div>
-                <iframe class="pdf-viewer-frame" src="${escapeHtml(tabData.pdfUrl)}#page=${startPage}"></iframe>
+                <iframe class="pdf-viewer-frame" src="${escapeHtml(tabData.pdfUrl)}#page=${targetPdfPage}"></iframe>
             </div>
         `;
     }
@@ -787,18 +818,24 @@ function setupEquationInteraction(eqContainer) {
     });
 }
 
-// --- Add Page & PDF Page Range Functionality ---
+// --- Add Page & PDF Page Range Functionality (Enhanced with 3 Options) ---
 const pageEditorModal = document.getElementById('page-editor-modal');
 const pageEditorTitle = document.getElementById('page-editor-title');
 const genericFields = document.getElementById('generic-page-fields');
 const formulaFields = document.getElementById('formula-page-fields');
+const photoFields = document.getElementById('photo-page-fields');
+
 const genericHeadingInput = document.getElementById('generic-page-heading');
 const genericContentInput = document.getElementById('generic-page-content');
-const pdfUrlInput = document.getElementById('pdf-url-input');
-const pdfPageRangeInput = document.getElementById('pdf-page-range-input');
 const formulaHeadingInput = document.getElementById('formula-page-heading');
 const formulaLatexInput = document.getElementById('formula-latex-input');
 const formulaPreview = document.getElementById('formula-preview');
+const photoHeadingInput = document.getElementById('photo-page-heading');
+const photoFileInput = document.getElementById('photo-page-file');
+const photoUrlInput = document.getElementById('photo-page-url');
+
+const pdfUrlInput = document.getElementById('pdf-url-input');
+const pdfPageRangeInput = document.getElementById('pdf-page-range-input');
 
 const tabDisplayNames = {
     intro: 'Intro',
@@ -811,29 +848,43 @@ const tabDisplayNames = {
     blank: 'Page'
 };
 
+// Handle Radio Toggle for 3 Options
+document.querySelectorAll('input[name="pageContentType"]').forEach(radio => {
+    radio.addEventListener('change', (e) => {
+        switchPageContentType(e.target.value);
+    });
+});
+
+function switchPageContentType(type) {
+    genericFields.style.display = type === 'standard' ? 'block' : 'none';
+    formulaFields.style.display = type === 'latex' ? 'block' : 'none';
+    photoFields.style.display = type === 'photo' ? 'block' : 'none';
+}
+
 document.getElementById('btn-add-page').addEventListener('click', () => {
     const tabData = getTabData(currentLesson, currentTab);
 
+    // Reset Form Fields
     genericHeadingInput.value = '';
     genericContentInput.value = '';
-    pdfUrlInput.value = tabData.pdfUrl || '';
-    pdfPageRangeInput.value = tabData.pageRange || '';
     formulaHeadingInput.value = '';
     formulaLatexInput.value = '';
+    photoHeadingInput.value = '';
+    photoFileInput.value = '';
+    photoUrlInput.value = '';
     formulaPreview.innerHTML = '<em>Your formula will appear here...</em>';
 
-    if (currentTab === 'formula') {
-        pageEditorTitle.textContent = 'Add Formula';
-        genericFields.style.display = 'none';
-        formulaFields.style.display = 'block';
-    } else {
-        pageEditorTitle.textContent = `Add ${tabDisplayNames[currentTab] || 'Page'}`;
-        genericFields.style.display = 'block';
-        formulaFields.style.display = 'none';
-    }
+    pdfUrlInput.value = tabData.pdfUrl || '';
+    pdfPageRangeInput.value = tabData.pageRange || '';
 
+    // Default choice dynamically based on tab or set to Standard
+    const defaultType = currentTab === 'formula' ? 'latex' : 'standard';
+    const radioToSelect = document.querySelector(`input[name="pageContentType"][value="${defaultType}"]`);
+    if (radioToSelect) radioToSelect.checked = true;
+    switchPageContentType(defaultType);
+
+    pageEditorTitle.textContent = `Add Page to ${tabDisplayNames[currentTab] || 'Tab'}`;
     pageEditorModal.style.display = 'flex';
-    (currentTab === 'formula' ? formulaLatexInput : genericContentInput).focus();
 });
 
 formulaLatexInput.addEventListener('input', () => {
@@ -855,25 +906,54 @@ document.getElementById('page-editor-save').addEventListener('click', () => {
     tabData.pdfUrl = pdfUrlInput.value.trim();
     tabData.pageRange = pdfPageRangeInput.value.trim();
 
-    if (currentTab === 'formula') {
+    const selectedType = document.querySelector('input[name="pageContentType"]:checked').value;
+
+    const commitAndClose = () => {
+        currentPageIndex = tabData.content.length - 1;
+        persistDatabase();
+        pageEditorModal.style.display = 'none';
+        loadContent();
+    };
+
+    if (selectedType === 'latex') {
         const latex = formulaLatexInput.value.trim();
         if (latex) {
             const heading = formulaHeadingInput.value.trim();
             const html = `<div class="formula-box">${heading ? `<strong>${escapeHtml(heading)}:</strong><br><br>` : ''}\\[ ${latex} \\]</div>`;
             tabData.content.push(html);
         }
+        commitAndClose();
+    } else if (selectedType === 'photo') {
+        const heading = photoHeadingInput.value.trim();
+        const urlVal = photoUrlInput.value.trim();
+        const file = photoFileInput.files[0];
+
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const imgHtml = `<div class="tab-photo-page">${heading ? `<h3>${escapeHtml(heading)}</h3>` : ''}<img src="${event.target.result}" alt="Page Photo" class="tab-content-image"></div>`;
+                tabData.content.push(imgHtml);
+                commitAndClose();
+            };
+            reader.readAsDataURL(file);
+            return;
+        } else if (urlVal) {
+            const imgHtml = `<div class="tab-photo-page">${heading ? `<h3>${escapeHtml(heading)}</h3>` : ''}<img src="${escapeHtml(urlVal)}" alt="Page Photo" class="tab-content-image"></div>`;
+            tabData.content.push(imgHtml);
+            commitAndClose();
+        } else {
+            commitAndClose();
+        }
     } else {
+        // Standard Text Option
         const heading = genericHeadingInput.value.trim();
         const body = genericContentInput.value.trim();
-        if (body) {
+        if (body || heading) {
             const html = `${heading ? `<h3>${escapeHtml(heading)}</h3>` : ''}<p>${escapeHtml(body).replace(/\n/g, '<br>')}</p>`;
             tabData.content.push(html);
         }
+        commitAndClose();
     }
-
-    currentPageIndex = tabData.content.length - 1;
-    pageEditorModal.style.display = 'none';
-    loadContent();
 });
 
 document.getElementById('page-editor-cancel').addEventListener('click', () => {
@@ -900,7 +980,7 @@ function renderReferences() {
     const lesson = lessonDatabase[currentLesson];
     referencesContainer.innerHTML = '';
 
-    if (!lesson.resources || lesson.resources.length === 0) {
+    if (!lesson || !lesson.resources || lesson.resources.length === 0) {
         referencesContainer.innerHTML = '<p class="no-references">No references added for this day yet.</p>';
         return;
     }
@@ -916,6 +996,7 @@ function renderReferences() {
         `;
         item.querySelector('.ref-delete-btn').addEventListener('click', () => {
             lesson.resources.splice(index, 1);
+            persistDatabase();
             renderReferences();
         });
         referencesContainer.appendChild(item);
@@ -944,8 +1025,14 @@ refTypeSelect.addEventListener('change', () => {
 });
 
 function addReference(type, title, url) {
-    lessonDatabase[currentLesson].resources.push({ type, title, url });
-    renderReferences();
+    if (lessonDatabase[currentLesson]) {
+        if (!lessonDatabase[currentLesson].resources) {
+            lessonDatabase[currentLesson].resources = [];
+        }
+        lessonDatabase[currentLesson].resources.push({ type, title, url });
+        persistDatabase();
+        renderReferences();
+    }
     referenceModal.style.display = 'none';
 }
 
@@ -984,7 +1071,7 @@ document.getElementById('reference-modal-cancel').addEventListener('click', () =
     referenceModal.style.display = 'none';
 });
 
-// --- Filter Bar Logic ---
+// --- Filter Bar Logic & LocalStorage Persistence ---
 const classFilter = document.getElementById('class-filter');
 const unitFilter = document.getElementById('unit-filter');
 const titleFilter = document.getElementById('title-filter');
@@ -992,6 +1079,29 @@ const dayFilter = document.getElementById('day-filter');
 const filterStatus = document.getElementById('filter-status');
 const filterResultsGroup = document.getElementById('filter-results-group');
 const fileResultsSelect = document.getElementById('file-results-select');
+
+function saveFilterPreferences() {
+    const filterState = {
+        classVal: classFilter.value,
+        unitVal: unitFilter.value,
+        dayVal: dayFilter.value,
+        titleVal: titleFilter.value
+    };
+    localStorage.setItem(FILTER_STORAGE_KEY, JSON.stringify(filterState));
+}
+
+function loadSavedFilters() {
+    try {
+        const saved = localStorage.getItem(FILTER_STORAGE_KEY);
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            classFilter.value = parsed.classVal || '';
+            unitFilter.value = parsed.unitVal || '';
+            dayFilter.value = parsed.dayVal || '';
+            titleFilter.value = parsed.titleVal || '';
+        }
+    } catch(e) {}
+}
 
 function loadLessonById(lessonId) {
     currentLesson = lessonId;
@@ -1012,6 +1122,8 @@ function loadLessonById(lessonId) {
 }
 
 function applyFilters() {
+    saveFilterPreferences();
+
     const classVal = classFilter.value;
     const unitVal = unitFilter.value;
     const dayVal = dayFilter.value;
@@ -1053,6 +1165,7 @@ function applyFilters() {
 
     filterResultsGroup.style.display = 'flex';
     fileResultsSelect.innerHTML = matches.map(m => `<option value="${m.id}">${escapeHtml(m.title)} (${m.day})</option>`).join('');
+    loadLessonById(matches[0].id);
 }
 
 fileResultsSelect.addEventListener('change', () => {
@@ -1072,6 +1185,7 @@ document.getElementById('btn-filter-clear').addEventListener('click', () => {
     filterStatus.textContent = '';
     filterStatus.className = 'filter-status';
     filterResultsGroup.style.display = 'none';
+    saveFilterPreferences();
 });
 
 // --- Download / Screenshot Logic ---
@@ -1113,5 +1227,10 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// Initial Load
-loadContent();
+// Initial Load & Filter Restoration
+loadSavedFilters();
+if (classFilter.value || unitFilter.value || dayFilter.value || titleFilter.value) {
+    applyFilters();
+} else {
+    loadContent();
+}
