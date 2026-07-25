@@ -461,6 +461,45 @@ body {
     transform: translateY(-1px);
 }
 
+/* 3-Option Toggle Pills in Add Page Modal */
+.page-option-toggle {
+    display: flex;
+    gap: 10px;
+    margin-top: 5px;
+    background: #f3f4f6;
+    padding: 6px;
+    border-radius: 8px;
+}
+
+.option-pill {
+    flex: 1;
+    text-align: center;
+    padding: 6px 10px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 6px;
+    background: white;
+    border: 1px solid #d1d5db;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.option-pill input[type="radio"] {
+    margin-right: 4px;
+}
+
+.tab-content-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin-top: 15px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
 /* PDF Embed Styling */
 .pdf-viewer-wrapper {
     margin-top: 20px;
