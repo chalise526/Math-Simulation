@@ -1,6 +1,6 @@
 // --- Database of Daily Lessons ---
-// Each "day file" carries the metadata the filter bar sorts by (class, unit, day)
-// plus a title to search on, its tab content, and its own reference/resource list.
+// Each "day file" carries metadata for filtering (class, unit, day)
+// plus title, tab content, attached PDF details (pdfUrl, pageRange), and resources.
 const lessonDatabase = {
     blank: {
         id: 'blank',
@@ -9,7 +9,11 @@ const lessonDatabase = {
         day: '',
         title: 'Blank Page',
         tabs: {
-            intro: ["<h3>📄 Blank Page</h3><p>Use this blank page for quick notes and drawings during class.</p>"]
+            intro: {
+                content: ["<h3>📄 Blank Page</h3><p>Use this blank page for quick notes and drawings during class.</p>"],
+                pdfUrl: "",
+                pageRange: ""
+            }
         },
         resources: []
     },
@@ -20,23 +24,47 @@ const lessonDatabase = {
         day: 'day2',
         title: 'रीत वा बहुलक (Mode)',
         tabs: {
-            intro: ["<h3>रीत वा बहुलक (Mode)</h3><p>Today we will learn how to calculate the Mode of continuous data.</p>"],
-            concept: ["<p>The mode is the value that appears most frequently in a data set. For grouped data, we find the modal class first.</p>"],
-            formula: [
-                `<div class="formula-box">
-                    <strong>रीत (Mode) को सूत्र:</strong><br><br>
-                    \\[ Mode = L + \\frac{f_1 - f_0}{2f_1 - f_0 - f_2} \\times h \\]
-                    <br><p style="font-size:0.9rem; color:#555;">Where: L = Lower limit of modal class, h = Class interval size</p>
-                 </div>`,
-                `<div class="formula-box">
-                    <strong>Correction Factor (If classes are not continuous):</strong><br><br>
-                    \\[ CF = \\frac{\\text{Lower limit of 2nd class} - \\text{Upper limit of 1st class}}{2} \\]
-                 </div>`
-            ],
-            activities: ["<p>Group Activity: Find the heights of 10 students and group them into intervals.</p>"],
-            examples: ["<p>Example 1: Calculate the mode of the given dataset on the board.</p>"],
-            practice: ["<p>Find the mode for the following dataset: [Class: 10-20, 20-30, 30-40] [Freq: 4, 12, 5]</p>"],
-            quiz: ["<p>Quick Question: Does the modal class always have the highest frequency? (Yes/No)</p>"]
+            intro: {
+                content: ["<h3>रीत वा बहुलक (Mode)</h3><p>Today we will learn how to calculate the Mode of continuous data.</p>"],
+                pdfUrl: "pdfs/sample.pdf",
+                pageRange: "1-3"
+            },
+            concept: {
+                content: ["<p>The mode is the value that appears most frequently in a data set. For grouped data, we find the modal class first.</p>"],
+                pdfUrl: "pdfs/sample.pdf",
+                pageRange: "4-5"
+            },
+            formula: {
+                content: [
+                    `<div class="formula-box">
+                        <strong>रीत (Mode) को सूत्र:</strong><br><br>
+                        \\[ Mode = L + \\frac{f_1 - f_0}{2f_1 - f_0 - f_2} \\times h \\]
+                        <br><p style="font-size:0.9rem; color:#555;">Where: L = Lower limit of modal class, h = Class interval size</p>
+                     </div>`
+                ],
+                pdfUrl: "pdfs/sample.pdf",
+                pageRange: "6"
+            },
+            activities: {
+                content: ["<p>Group Activity: Find the heights of 10 students and group them into intervals.</p>"],
+                pdfUrl: "pdfs/sample.pdf",
+                pageRange: "7-8"
+            },
+            examples: {
+                content: ["<p>Example 1: Calculate the mode of the given dataset on the board.</p>"],
+                pdfUrl: "pdfs/sample.pdf",
+                pageRange: "9"
+            },
+            practice: {
+                content: ["<p>Find the mode for the following dataset: [Class: 10-20, 20-30, 30-40] [Freq: 4, 12, 5]</p>"],
+                pdfUrl: "pdfs/sample.pdf",
+                pageRange: "10-12"
+            },
+            quiz: {
+                content: ["<p>Quick Question: Does the modal class always have the highest frequency? (Yes/No)</p>"],
+                pdfUrl: "pdfs/sample.pdf",
+                pageRange: "13"
+            }
         },
         resources: []
     },
@@ -47,30 +75,47 @@ const lessonDatabase = {
         day: 'day1',
         title: "Heron's Formula",
         tabs: {
-            intro: ["<h3>Heron's Formula</h3><p>Review of calculating the area of a triangle.</p>"],
-            formula: [
-                `<div class="formula-box">
-                    <strong>Area of Triangle:</strong><br><br>
-                    \\[ s = \\frac{a + b + c}{2} \\]
-                    \\[ Area = \\sqrt{s(s-a)(s-b)(s-c)} \\]
-                 </div>`
-            ],
-            practice: ["<p>Calculate the area of a triangle with sides 3cm, 4cm, and 5cm.</p>"]
+            intro: {
+                content: ["<h3>Heron's Formula</h3><p>Review of calculating the area of a triangle.</p>"],
+                pdfUrl: "pdfs/heron.pdf",
+                pageRange: "1-2"
+            },
+            formula: {
+                content: [
+                    `<div class="formula-box">
+                        <strong>Area of Triangle:</strong><br><br>
+                        \\[ s = \\frac{a + b + c}{2} \\]
+                        \\[ Area = \\sqrt{s(s-a)(s-b)(s-c)} \\]
+                     </div>`
+                ],
+                pdfUrl: "pdfs/heron.pdf",
+                pageRange: "3-4"
+            },
+            practice: {
+                content: ["<p>Calculate the area of a triangle with sides 3cm, 4cm, and 5cm.</p>"],
+                pdfUrl: "pdfs/heron.pdf",
+                pageRange: "5"
+            }
         },
         resources: []
     }
 };
 
-// Helper: make sure a tab's page array exists for a given lesson id
-function ensureTabArray(lessonId, tab) {
+// Helper: ensure tab structure exists
+function getTabData(lessonId, tabKey) {
     const lesson = lessonDatabase[lessonId];
-    if (!lesson.tabs[tab]) {
-        lesson.tabs[tab] = [];
+    if (!lesson) return { content: [""], pdfUrl: "", pageRange: "" };
+    
+    if (!lesson.tabs[tabKey]) {
+        lesson.tabs[tabKey] = { content: ["<p>Content for this section is not uploaded yet.</p>"], pdfUrl: "", pageRange: "" };
+    } else if (Array.isArray(lesson.tabs[tabKey])) {
+        // Migration helper if tab is array format
+        lesson.tabs[tabKey] = { content: lesson.tabs[tabKey], pdfUrl: "", pageRange: "" };
     }
-    return lesson.tabs[tab];
+    return lesson.tabs[tabKey];
 }
 
-// Helper: basic escaping for user-typed headings inserted as HTML
+// Helper: basic escaping for headings
 function escapeHtml(str) {
     const div = document.createElement('div');
     div.textContent = str;
@@ -85,8 +130,6 @@ let currentTabContentArray = [];
 let currentTool = 'pen';
 let currentShape = 'rectangle';
 let isDrawing = false;
-let draggedElement = null;
-let resizingElement = null;
 let textInputPosition = { x: 0, y: 0 };
 let editingTextBox = null;
 let shapeStartX = 0;
@@ -115,13 +158,30 @@ function loadContent() {
         lessonContainer.classList.remove('hidden');
     }
 
-    currentTabContentArray = (lessonDatabase[currentLesson].tabs && lessonDatabase[currentLesson].tabs[currentTab]) || ["<p>Content for this section is not uploaded yet.</p>"];
+    const tabData = getTabData(currentLesson, currentTab);
+    currentTabContentArray = tabData.content || ["<p>Content for this section is not uploaded yet.</p>"];
     
     if (currentPageIndex >= currentTabContentArray.length) {
         currentPageIndex = 0; 
     }
 
-    contentDiv.innerHTML = currentTabContentArray[currentPageIndex];
+    // Build standard text/html content
+    let htmlOutput = currentTabContentArray[currentPageIndex] || "";
+
+    // Append embedded PDF viewer if PDF URL and page range exist
+    if (tabData.pdfUrl && tabData.pageRange) {
+        const startPage = tabData.pageRange.split('-')[0].trim();
+        htmlOutput += `
+            <div class="pdf-viewer-wrapper">
+                <div class="pdf-badge">
+                    <i class="fa-solid fa-file-pdf"></i> Assigned PDF Range: <strong>Pages ${escapeHtml(tabData.pageRange)}</strong>
+                </div>
+                <iframe class="pdf-viewer-frame" src="${escapeHtml(tabData.pdfUrl)}#page=${startPage}"></iframe>
+            </div>
+        `;
+    }
+
+    contentDiv.innerHTML = htmlOutput;
     
     if (window.MathJax) {
         MathJax.typesetPromise([contentDiv]).catch((err) => console.log(err.message));
@@ -139,7 +199,6 @@ function loadContent() {
     renderReferences();
 }
 
-// Keep the toolbar label above the lesson content in sync with the active tab
 function updateTabLabel(sourceBtn) {
     const label = document.getElementById('current-tab-label');
     if (label && sourceBtn) {
@@ -161,10 +220,10 @@ document.getElementById('next-page').addEventListener('click', () => {
     }
 });
 
-let lastDayLesson = currentLesson; // remembers the last real day file (not "blank")
+let lastDayLesson = currentLesson;
 
 document.querySelectorAll('.nav-btn').forEach(btn => {
-    if (btn.id === 'blank-page-btn') return; // handled separately below
+    if (btn.id === 'blank-page-btn') return;
     btn.addEventListener('click', (e) => {
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         e.currentTarget.classList.add('active');
@@ -178,7 +237,6 @@ document.querySelectorAll('.nav-btn').forEach(btn => {
     });
 });
 
-// Blank page button handler
 document.getElementById('blank-page-btn').addEventListener('click', function(e) {
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
     this.classList.add('active');
@@ -190,10 +248,6 @@ document.getElementById('blank-page-btn').addEventListener('click', function(e) 
     currentPageIndex = 0;
     loadContent();
 });
-
-// Note: the initial loadContent() call happens at the very end of this file,
-// after every const/element reference it depends on (references, filters, etc.)
-// has been declared — calling it here would hit a temporal-dead-zone error.
 
 // --- Interactive Whiteboard (Canvas) Logic ---
 const canvas = document.getElementById('drawing-board');
@@ -242,7 +296,6 @@ function draw(e) {
 
     if (currentTool === 'shape') {
         if (!isShapeDragging) return;
-        // Rubber-band preview on the overlay canvas while dragging
         previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
         renderShape(previewCtx, shapeStartX, shapeStartY, x, y, currentShape);
         return;
@@ -271,8 +324,6 @@ function stopDrawing(e) {
     ctx.beginPath();
 }
 
-// Draws one shape onto whichever context is passed in (main canvas for the
-// final result, preview canvas for the live rubber-band while dragging).
 function renderShape(targetCtx, startX, startY, endX, endY, shape) {
     const width = endX - startX;
     const height = endY - startY;
@@ -350,7 +401,7 @@ canvas.addEventListener('touchmove', (e) => draw(e.touches[0]));
 canvas.addEventListener('touchend', stopDrawing);
 
 // --- Tool Button Events ---
-document.getElementById('btn-move').addEventListener('click', function(e) {
+document.getElementById('btn-move').addEventListener('click', function() {
     currentTool = 'move';
     canvas.style.pointerEvents = 'none';
     document.getElementById('pen-tools').style.display = 'none';
@@ -358,7 +409,7 @@ document.getElementById('btn-move').addEventListener('click', function(e) {
     updateToolButtons(this);
 });
 
-document.getElementById('btn-draw').addEventListener('click', function(e) {
+document.getElementById('btn-draw').addEventListener('click', function() {
     currentTool = 'pen';
     canvas.style.pointerEvents = 'auto';
     document.getElementById('pen-tools').style.display = 'block';
@@ -366,7 +417,7 @@ document.getElementById('btn-draw').addEventListener('click', function(e) {
     updateToolButtons(this);
 });
 
-document.getElementById('btn-type').addEventListener('click', function(e) {
+document.getElementById('btn-type').addEventListener('click', function() {
     currentTool = 'type';
     canvas.style.pointerEvents = 'none';
     document.getElementById('pen-tools').style.display = 'none';
@@ -374,7 +425,7 @@ document.getElementById('btn-type').addEventListener('click', function(e) {
     updateToolButtons(this);
 });
 
-document.getElementById('btn-shape').addEventListener('click', function(e) {
+document.getElementById('btn-shape').addEventListener('click', function() {
     currentTool = 'shape';
     canvas.style.pointerEvents = 'auto';
     document.getElementById('pen-tools').style.display = 'none';
@@ -382,7 +433,7 @@ document.getElementById('btn-shape').addEventListener('click', function(e) {
     updateToolButtons(this);
 });
 
-document.getElementById('btn-equation').addEventListener('click', function(e) {
+document.getElementById('btn-equation').addEventListener('click', function() {
     currentTool = 'equation';
     canvas.style.pointerEvents = 'none';
     document.getElementById('pen-tools').style.display = 'none';
@@ -391,7 +442,7 @@ document.getElementById('btn-equation').addEventListener('click', function(e) {
     showEquationModal();
 });
 
-document.getElementById('btn-erase').addEventListener('click', function(e) {
+document.getElementById('btn-erase').addEventListener('click', function() {
     currentTool = 'eraser';
     canvas.style.pointerEvents = 'auto';
     document.getElementById('pen-tools').style.display = 'none';
@@ -403,7 +454,6 @@ document.getElementById('btn-clear').addEventListener('click', () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 });
 
-// Pen color and weight
 document.getElementById('pen-color').addEventListener('change', (e) => {
     currentPenColor = e.target.value;
     ctx.strokeStyle = currentPenColor;
@@ -414,7 +464,6 @@ document.getElementById('pen-weight').addEventListener('change', (e) => {
     ctx.lineWidth = currentPenWeight;
 });
 
-// Shape buttons
 document.querySelectorAll('.shape-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
         document.querySelectorAll('.shape-btn').forEach(b => b.classList.remove('active'));
@@ -476,7 +525,6 @@ function setupPhotoInteraction(photoElement) {
     let startX, startY, startWidth, startHeight;
     let rotation = 0;
     
-    // Drag functionality
     photoElement.addEventListener('mousedown', (e) => {
         if (e.target.closest('.photo-controls')) return;
         if (currentTool !== 'move') return;
@@ -499,14 +547,12 @@ function setupPhotoInteraction(photoElement) {
         photoElement.classList.remove('dragging');
     });
     
-    // Rotate functionality
     const rotateBtn = photoElement.querySelector('.rotate-btn');
     rotateBtn.addEventListener('click', () => {
         rotation = (rotation + 90) % 360;
         img.style.transform = `rotate(${rotation}deg)`;
     });
     
-    // Resize functionality
     const resizeBtn = photoElement.querySelector('.resize-btn');
     resizeBtn.addEventListener('click', () => {
         isResizing = !isResizing;
@@ -525,7 +571,6 @@ function setupPhotoInteraction(photoElement) {
         }
     });
     
-    // Resize by dragging corner
     photoElement.addEventListener('mousedown', (e) => {
         if (!isResizing) return;
         const rect = photoElement.getBoundingClientRect();
@@ -557,7 +602,6 @@ function setupPhotoInteraction(photoElement) {
         document.addEventListener('mouseup', onMouseUp);
     });
     
-    // Delete button
     photoElement.querySelector('.delete-btn').addEventListener('click', () => {
         photoElement.remove();
     });
@@ -743,17 +787,15 @@ function setupEquationInteraction(eqContainer) {
     });
 }
 
-// --- Add Page Functionality (replaces the old per-tab "+" buttons) ---
-// One button in the lesson toolbar, contextual to the active tab:
-//  - Formulas tab -> LaTeX input with a live MathJax preview (rendered via the
-//    MathJax CDN already loaded in index.html)
-//  - Every other tab -> a plain heading + content editor
+// --- Add Page & PDF Page Range Functionality ---
 const pageEditorModal = document.getElementById('page-editor-modal');
 const pageEditorTitle = document.getElementById('page-editor-title');
 const genericFields = document.getElementById('generic-page-fields');
 const formulaFields = document.getElementById('formula-page-fields');
 const genericHeadingInput = document.getElementById('generic-page-heading');
 const genericContentInput = document.getElementById('generic-page-content');
+const pdfUrlInput = document.getElementById('pdf-url-input');
+const pdfPageRangeInput = document.getElementById('pdf-page-range-input');
 const formulaHeadingInput = document.getElementById('formula-page-heading');
 const formulaLatexInput = document.getElementById('formula-latex-input');
 const formulaPreview = document.getElementById('formula-preview');
@@ -770,8 +812,12 @@ const tabDisplayNames = {
 };
 
 document.getElementById('btn-add-page').addEventListener('click', () => {
+    const tabData = getTabData(currentLesson, currentTab);
+
     genericHeadingInput.value = '';
     genericContentInput.value = '';
+    pdfUrlInput.value = tabData.pdfUrl || '';
+    pdfPageRangeInput.value = tabData.pageRange || '';
     formulaHeadingInput.value = '';
     formulaLatexInput.value = '';
     formulaPreview.innerHTML = '<em>Your formula will appear here...</em>';
@@ -790,7 +836,6 @@ document.getElementById('btn-add-page').addEventListener('click', () => {
     (currentTab === 'formula' ? formulaLatexInput : genericContentInput).focus();
 });
 
-// Live LaTeX preview, rendered through MathJax as the teacher types
 formulaLatexInput.addEventListener('input', () => {
     const latex = formulaLatexInput.value.trim();
     if (!latex) {
@@ -804,21 +849,29 @@ formulaLatexInput.addEventListener('input', () => {
 });
 
 document.getElementById('page-editor-save').addEventListener('click', () => {
+    const tabData = getTabData(currentLesson, currentTab);
+
+    // Save updated PDF configs for this tab
+    tabData.pdfUrl = pdfUrlInput.value.trim();
+    tabData.pageRange = pdfPageRangeInput.value.trim();
+
     if (currentTab === 'formula') {
         const latex = formulaLatexInput.value.trim();
-        if (!latex) return;
-        const heading = formulaHeadingInput.value.trim();
-        const html = `<div class="formula-box">${heading ? `<strong>${escapeHtml(heading)}:</strong><br><br>` : ''}\\[ ${latex} \\]</div>`;
-        ensureTabArray(currentLesson, 'formula').push(html);
+        if (latex) {
+            const heading = formulaHeadingInput.value.trim();
+            const html = `<div class="formula-box">${heading ? `<strong>${escapeHtml(heading)}:</strong><br><br>` : ''}\\[ ${latex} \\]</div>`;
+            tabData.content.push(html);
+        }
     } else {
         const heading = genericHeadingInput.value.trim();
         const body = genericContentInput.value.trim();
-        if (!body) return;
-        const html = `${heading ? `<h3>${escapeHtml(heading)}</h3>` : ''}<p>${escapeHtml(body).replace(/\n/g, '<br>')}</p>`;
-        ensureTabArray(currentLesson, currentTab).push(html);
+        if (body) {
+            const html = `${heading ? `<h3>${escapeHtml(heading)}</h3>` : ''}<p>${escapeHtml(body).replace(/\n/g, '<br>')}</p>`;
+            tabData.content.push(html);
+        }
     }
 
-    currentPageIndex = lessonDatabase[currentLesson].tabs[currentTab].length - 1;
+    currentPageIndex = tabData.content.length - 1;
     pageEditorModal.style.display = 'none';
     loadContent();
 });
@@ -828,8 +881,6 @@ document.getElementById('page-editor-cancel').addEventListener('click', () => {
 });
 
 // --- References & Resources ---
-// Renders the resource list for whichever lesson is currently loaded, and wires
-// up adding (image / PDF / link) and deleting entries.
 const referenceModal = document.getElementById('reference-modal');
 const refTitleInput = document.getElementById('ref-title-input');
 const refTypeSelect = document.getElementById('ref-type-select');
@@ -917,7 +968,6 @@ document.getElementById('reference-modal-save').addEventListener('click', () => 
         return;
     }
 
-    // image / pdf: read the uploaded file into a data URL so it's viewable with no backend
     const file = refFileInput.files[0];
     if (!file) {
         refFileInput.focus();
@@ -934,7 +984,7 @@ document.getElementById('reference-modal-cancel').addEventListener('click', () =
     referenceModal.style.display = 'none';
 });
 
-// --- Filter Bar (sort/find a day file by class, unit/topic, title and day) ---
+// --- Filter Bar Logic ---
 const classFilter = document.getElementById('class-filter');
 const unitFilter = document.getElementById('unit-filter');
 const titleFilter = document.getElementById('title-filter');
@@ -1001,7 +1051,6 @@ function applyFilters() {
         return;
     }
 
-    // Multiple matches: let the teacher pick which day file to open
     filterResultsGroup.style.display = 'flex';
     fileResultsSelect.innerHTML = matches.map(m => `<option value="${m.id}">${escapeHtml(m.title)} (${m.day})</option>`).join('');
 }
@@ -1043,26 +1092,17 @@ document.getElementById('btn-download').addEventListener('click', () => {
     });
 });
 
-// Modal close on outside click
+// Modals event handling
 document.addEventListener('click', (e) => {
-    if (e.target === textModal) {
-        textModal.style.display = 'none';
-    }
-    if (e.target === editTextModal) {
-        editTextModal.style.display = 'none';
-    }
-    if (e.target === pageEditorModal) {
-        pageEditorModal.style.display = 'none';
-    }
-    if (e.target === referenceModal) {
-        referenceModal.style.display = 'none';
-    }
+    if (e.target === textModal) textModal.style.display = 'none';
+    if (e.target === editTextModal) editTextModal.style.display = 'none';
+    if (e.target === pageEditorModal) pageEditorModal.style.display = 'none';
+    if (e.target === referenceModal) referenceModal.style.display = 'none';
     if (e.target === document.getElementById('equation-modal')) {
         document.getElementById('equation-modal').style.display = 'none';
     }
 });
 
-// Close modals with Escape key
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
         textModal.style.display = 'none';
@@ -1073,7 +1113,5 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// --- Initial Load ---
-// Runs last, after every element/const it touches (lesson content, references,
-// pagination) has been declared above.
+// Initial Load
 loadContent();
