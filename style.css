@@ -1,318 +1,231 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Math Simulation - Grade 9</title>
-    <!-- Modern Fonts and Icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
-    
-    <!-- Load MathJax for Math Formulas -->
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    
-    <!-- Load GeoGebra API -->
-    <script src="https://www.geogebra.org/apps/deployggb.js"></script>
-    
-    <!-- Load html2canvas for Download Feature -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    
-    <!-- Load jsPDF for PDF generation -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-</head>
-<body>
+:root {
+    --primary: #4f46e5;       /* Indigo 600 */
+    --primary-hover: #4338ca; /* Indigo 700 */
+    --bg-main: #f8fafc;       /* Slate 50 */
+    --surface: #ffffff;
+    --border: #e2e8f0;        /* Slate 200 */
+    --text-dark: #0f172a;     /* Slate 900 */
+    --text-muted: #64748b;    /* Slate 500 */
+    --accent: #f59e0b;
+}
 
-    <!-- Header Section -->
-    <header class="top-header">
-        <div class="logo-area">
-            <div class="school-badge"><i class="fa-solid fa-school"></i></div>
-        </div>
-        <div class="header-titles">
-            <h1>श्री योगी नरहरिनाथ संस्कृत विद्यापीठ</h1>
-            <h2>Gaindakot Municipality</h2>
-        </div>
-        <div class="toolbar">
-            <button id="btn-move" class="tool-btn" title="Move Tool"><i class="fa-solid fa-arrows-alt"></i> Move</button>
-            <button id="btn-draw" class="tool-btn active"><i class="fa-solid fa-pen"></i> Pen</button>
-            <button id="btn-type" class="tool-btn"><i class="fa-solid fa-keyboard"></i> Type</button>
-            <button id="btn-shape" class="tool-btn"><i class="fa-solid fa-shapes"></i> Shapes</button>
-            <button id="btn-equation" class="tool-btn"><i class="fa-solid fa-function"></i> Equation</button>
-            <button id="btn-erase" class="tool-btn"><i class="fa-solid fa-eraser"></i> Eraser</button>
-            <button id="btn-photo" class="tool-btn"><i class="fa-solid fa-image"></i> Photo</button>
-            <button id="btn-clear" class="tool-btn"><i class="fa-solid fa-trash-can"></i> Clear</button>
-            <button id="btn-download" class="tool-btn download-btn"><i class="fa-solid fa-download"></i> Save</button>
-        </div>
-        <input type="file" id="photo-input" accept="image/*" style="display:none;">
-    </header>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Poppins', sans-serif;
+}
 
-    <!-- Filter Bar -->
-    <div class="filter-bar">
-        <div class="filter-group">
-            <label><i class="fa-solid fa-book"></i> कक्षा (Class)</label>
-            <select id="class-filter">
-                <option value="">Select Class</option>
-                <option value="class6">कक्षा ६ (Class 6)</option>
-                <option value="class7">कक्षा ७ (Class 7)</option>
-                <option value="class8">कक्षा ८ (Class 8)</option>
-                <option value="class9">कक्षा ९ (Class 9)</option>
-                <option value="class10">कक्षा १० (Class 10)</option>
-            </select>
-        </div>
-        
-        <div class="filter-group">
-            <label><i class="fa-solid fa-layer-group"></i> एकाई (Unit)</label>
-            <select id="unit-filter">
-                <option value="">Select Unit</option>
-                <option value="unit1">समूह (Set)</option>
-                <option value="unit2">बीजगणित (Algebra)</option>
-                <option value="unit3">ज्यामिति (Geometry)</option>
-                <option value="unit4">तथ्याङ्कशास्त्र (Statstics)</option>
-                <option value="unit5">त्रिकोणमिति (Trigonometry)</option>
-                <option value="unit6">सम्भाव्यता (Probability)</option>
-            </select>
-        </div>
-        
-        <div class="filter-group">
-            <label><i class="fa-solid fa-heading"></i> शीर्षक (Title)</label>
-            <input type="text" id="title-filter" placeholder="Search topic...">
-        </div>
-        
-        <div class="filter-group">
-            <label><i class="fa-solid fa-calendar"></i> दिन (Day)</label>
-            <select id="day-filter">
-                <option value="">Select Day</option>
-                <option value="day1">दिन १ (Day 1)</option>
-                <option value="day2">दिन २ (Day 2)</option>
-                <option value="day3">दिन ३ (Day 3)</option>
-                <option value="day4">दिन ४ (Day 4)</option>
-                <option value="day5">दिन ५ (Day 5)</option>
-            </select>
-        </div>
+body {
+    background-color: var(--bg-main);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    color: var(--text-dark);
+}
 
-        <div class="filter-group filter-results-group" id="filter-results-group" style="display:none;">
-            <label><i class="fa-solid fa-list"></i> Matching Files</label>
-            <select id="file-results-select"></select>
-        </div>
+/* --- Clean, Compact Top Header --- */
+.top-header {
+    background-color: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    height: 64px;
+    z-index: 30;
+}
 
-        <button id="btn-filter-clear" class="filter-btn-clear" title="Clear Filters"><i class="fa-solid fa-rotate-left"></i> Reset</button>
+.school-badge {
+    display: none; /* Removed heavy badge for cleaner header */
+}
 
-        <span id="filter-status" class="filter-status"></span>
-    </div>
+.header-titles h1 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text-dark);
+}
 
-    <div class="main-container">
-        <!-- Sidebar Navigation -->
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <h3>Lessons</h3>
-            </div>
-            <div id="nav-container" class="nav-container">
-                <button class="nav-btn active" data-target="intro"><i class="fa-solid fa-info-circle"></i> परिचय (Intro)</button>
-                <button class="nav-btn" data-target="concept"><i class="fa-solid fa-lightbulb"></i> अवधारणा (Concept)</button>
-                <button class="nav-btn" data-target="formula"><i class="fa-solid fa-square-root-variable"></i> सूत्रहरू (Formulas)</button>
-                <button class="nav-btn" data-target="activities"><i class="fa-solid fa-users-gear"></i> क्रियाकलाप (Activities)</button>
-                <button class="nav-btn" data-target="examples"><i class="fa-solid fa-chalkboard-user"></i> उदाहरण (Examples)</button>
-                <button class="nav-btn" data-target="practice"><i class="fa-solid fa-pencil"></i> अभ्यास (Practice)</button>
-                <button class="nav-btn" data-target="quiz"><i class="fa-solid fa-clipboard-question"></i> हाजिरी जवाफ (Quiz)</button>
+.header-titles h2 {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
 
-                <hr class="sidebar-divider">
-                <button class="nav-btn" id="blank-page-btn" data-target="blank"><i class="fa-solid fa-file"></i> Blank Page</button>
-            </div>
-        </aside>
+/* Minimal Toolbar */
+.toolbar {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
 
-        <!-- Drawing Tools Panel -->
-        <div class="drawing-tools-panel">
-            <div class="tool-group" id="pen-tools">
-                <h4>Pen Options</h4>
-                <div class="option-group">
-                    <label>Color:</label>
-                    <input type="color" id="pen-color" value="#e53e3e">
-                </div>
-                <div class="option-group">
-                    <label>Weight:</label>
-                    <select id="pen-weight">
-                        <option value="1">Thin</option>
-                        <option value="3" selected>Normal</option>
-                        <option value="5">Medium</option>
-                        <option value="8">Thick</option>
-                    </select>
-                </div>
-            </div>
+.tool-btn {
+    padding: 6px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 500;
+    background-color: var(--surface);
+    color: var(--text-dark);
+    transition: all 0.15s ease;
+}
 
-            <div class="tool-group" id="shape-tools" style="display: none;">
-                <h4>Math Shapes</h4>
-                <div class="shape-grid">
-                    <button class="shape-btn active" data-shape="rectangle" title="Rectangle"><i class="fa-solid fa-rectangle"></i></button>
-                    <button class="shape-btn" data-shape="circle" title="Circle"><i class="fa-solid fa-circle"></i></button>
-                    <button class="shape-btn" data-shape="triangle" title="Triangle"><i class="fa-solid fa-play"></i></button>
-                    <button class="shape-btn" data-shape="line" title="Line"><i class="fa-solid fa-minus"></i></button>
-                    <button class="shape-btn" data-shape="arrow" title="Arrow"><i class="fa-solid fa-arrow-right"></i></button>
-                    <button class="shape-btn" data-shape="parallelogram" title="Parallelogram"><i class="fa-solid fa-vector-square"></i></button>
-                </div>
-                <p class="field-hint shape-hint">Click and drag on the board to draw the selected shape.</p>
-            </div>
-        </div>
+.tool-btn:hover {
+    background-color: var(--bg-main);
+    border-color: var(--text-muted);
+}
 
-        <!-- Content Stage & Canvas -->
-        <main class="content-stage" id="export-area">
-            <canvas id="drawing-board"></canvas>
-            <canvas id="shape-preview-board"></canvas>
-            
-            <div id="photos-container" class="photos-container"></div>
-            <div id="text-boxes-container" class="text-boxes-container"></div>
-            <div id="equation-container" class="equation-container"></div>
-            
-            <div class="lesson-container">
-                <div class="lesson-toolbar">
-                    <span id="current-tab-label" class="current-tab-label"><i class="fa-solid fa-info-circle"></i> परिचय (Intro)</span>
-                    <button id="btn-add-page" class="add-page-btn" title="Add or edit pages and PDFs"><i class="fa-solid fa-plus"></i> Add Page / Edit PDF</button>
-                </div>
+.tool-btn.active {
+    background-color: var(--primary);
+    color: #ffffff;
+    border-color: var(--primary);
+}
 
-                <div id="lesson-content" class="lesson-content">
-                    <!-- Dynamic lesson content and PDF viewer injected here -->
-                </div>
+.download-btn {
+    background-color: #10b981;
+    color: white;
+    border: none;
+}
 
-                <div class="pagination-controls" id="pagination-controls">
-                    <button id="prev-page" class="page-btn"><i class="fa-solid fa-chevron-left"></i> Previous</button>
-                    <span id="page-indicator">Page 1 / 3</span>
-                    <button id="next-page" class="page-btn">Next <i class="fa-solid fa-chevron-right"></i></button>
-                </div>
-            </div>
-        </main>
-    </div>
+/* --- Streamlined Filter Bar --- */
+.filter-bar {
+    background-color: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 20px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    font-size: 0.8rem;
+}
 
-    <!-- References Section -->
-    <div class="references-section">
-        <div class="references-header">
-            <h3><i class="fa-solid fa-book-open"></i> References & Resources</h3>
-            <button id="btn-add-reference" class="add-ref-btn" title="Add Reference"><i class="fa-solid fa-plus"></i> Add</button>
-        </div>
-        <div class="references-container" id="references-container"></div>
-    </div>
+.filter-group label {
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-right: 4px;
+}
 
-    <footer class="footer">
-        <p>Made by Er. Kamal Chalise</p>
-    </footer>
+.filter-group select,
+.filter-group input[type="text"] {
+    padding: 4px 8px;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    font-size: 0.8rem;
+    background-color: var(--bg-main);
+}
 
-    <!-- Text Input Modal -->
-    <div id="text-modal" class="text-modal" style="display:none;">
-        <div class="text-modal-content">
-            <h3>Add Text</h3>
-            <textarea id="text-input" class="text-input" placeholder="Enter your text here..."></textarea>
-            <div class="text-modal-buttons">
-                <button id="text-modal-save" class="modal-btn save-btn">Save</button>
-                <button id="text-modal-cancel" class="modal-btn cancel-btn">Cancel</button>
-            </div>
-        </div>
-    </div>
+.filter-btn-clear {
+    padding: 4px 10px;
+    background-color: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    cursor: pointer;
+}
 
-    <!-- Edit Text Modal -->
-    <div id="edit-text-modal" class="text-modal" style="display:none;">
-        <div class="text-modal-content">
-            <h3>Edit Text</h3>
-            <textarea id="edit-text-input" class="text-input" placeholder="Edit your text..."></textarea>
-            <div class="text-modal-buttons">
-                <button id="edit-text-save" class="modal-btn save-btn">Save</button>
-                <button id="edit-text-cancel" class="modal-btn cancel-btn">Cancel</button>
-            </div>
-        </div>
-    </div>
+/* --- Main Layout --- */
+.main-container {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+}
 
-    <!-- Equation Modal -->
-    <div id="equation-modal" class="text-modal" style="display:none;">
-        <div class="equation-modal-content">
-            <h3>Add Mathematical Equation</h3>
-            <div id="geogebra-applet" class="geogebra-applet"></div>
-            <div class="equation-modal-buttons">
-                <button id="equation-modal-save" class="modal-btn save-btn">Insert</button>
-                <button id="equation-modal-cancel" class="modal-btn cancel-btn">Cancel</button>
-            </div>
-        </div>
-    </div>
+/* Sidebar */
+.sidebar {
+    width: 220px;
+    background-color: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 15px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
 
-    <!-- Add Page / Edit PDF Editor Modal -->
-    <div id="page-editor-modal" class="text-modal" style="display:none;">
-        <div class="panel-modal-content page-editor-content">
-            <h3 id="page-editor-title">Add Page</h3>
+.sidebar-header h3 {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    padding-left: 8px;
+}
 
-            <!-- Generic content fields -->
-            <div id="generic-page-fields">
-                <div class="form-group">
-                    <label>Page Heading (optional):</label>
-                    <input type="text" id="generic-page-heading" class="panel-input" placeholder="e.g., Key Concept">
-                </div>
-                <div class="form-group">
-                    <label>Content (optional):</label>
-                    <textarea id="generic-page-content" class="text-input" placeholder="Write lesson notes or content..."></textarea>
-                </div>
-            </div>
+.nav-btn {
+    padding: 9px 12px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.15s ease;
+}
 
-            <!-- Formula/LaTeX fields -->
-            <div id="formula-page-fields" style="display:none;">
-                <div class="form-group">
-                    <label>Formula Name (optional):</label>
-                    <input type="text" id="formula-page-heading" class="panel-input" placeholder="e.g., Area of a Triangle">
-                </div>
-                <div class="form-group">
-                    <label>LaTeX Code:</label>
-                    <textarea id="formula-latex-input" class="text-input latex-code" placeholder="e.g., Area = \sqrt{s(s-a)(s-b)(s-c)}" style="min-height: 80px;"></textarea>
-                </div>
-                <div class="form-group">
-                    <label>Live Preview:</label>
-                    <div id="formula-preview" class="formula-preview"><em>Your formula will appear here...</em></div>
-                </div>
-            </div>
+.nav-btn:hover {
+    background-color: var(--bg-main);
+    color: var(--text-dark);
+}
 
-            <!-- PDF Page Settings -->
-            <hr style="margin: 15px 0; border: none; border-top: 1px solid #e5e7eb;">
-            <div class="form-group">
-                <label><i class="fa-solid fa-file-pdf"></i> PDF File / URL:</label>
-                <input type="text" id="pdf-url-input" class="panel-input" placeholder="e.g., pdfs/sample.pdf or https://example.com/doc.pdf">
-            </div>
-            <div class="form-group">
-                <label><i class="fa-solid fa-list-ol"></i> Page Range for Tab:</label>
-                <input type="text" id="pdf-page-range-input" class="panel-input" placeholder="e.g., 1-3 or 4">
-            </div>
+.nav-btn.active {
+    background-color: #e0e7ff;
+    color: var(--primary);
+    font-weight: 600;
+}
 
-            <div class="panel-modal-buttons">
-                <button id="page-editor-save" class="modal-btn save-btn">Save Changes</button>
-                <button id="page-editor-cancel" class="modal-btn cancel-btn">Cancel</button>
-            </div>
-        </div>
-    </div>
+/* Floating Drawing Controls (replaces bulky right sidebar) */
+.drawing-tools-panel {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    border-radius: 8px;
+    padding: 10px;
+    z-index: 20;
+    width: 160px;
+}
 
-    <!-- Add Reference Modal -->
-    <div id="reference-modal" class="text-modal" style="display:none;">
-        <div class="reference-modal-content">
-            <h3>Add Reference</h3>
-            <div class="form-group">
-                <label>Reference Title:</label>
-                <input type="text" id="ref-title-input" class="panel-input" placeholder="e.g., Geometry Basics">
-            </div>
-            <div class="form-group">
-                <label>Reference Type:</label>
-                <select id="ref-type-select" class="panel-input">
-                    <option value="image">Image</option>
-                    <option value="pdf">PDF</option>
-                    <option value="link">Link</option>
-                </select>
-            </div>
-            <div class="form-group" id="ref-file-group">
-                <label>Upload File:</label>
-                <input type="file" id="ref-file-input" class="panel-input" accept=".pdf,.jpg,.jpeg,.png,.gif">
-            </div>
-            <div class="form-group" id="ref-link-group" style="display:none;">
-                <label>URL:</label>
-                <input type="url" id="ref-link-input" class="panel-input" placeholder="https://example.com">
-            </div>
-            <div class="panel-modal-buttons">
-                <button id="reference-modal-save" class="modal-btn save-btn">Add Reference</button>
-                <button id="reference-modal-cancel" class="modal-btn cancel-btn">Cancel</button>
-            </div>
-        </div>
-    </div>
+/* --- Stage & Responsive PDF Viewer --- */
+.content-stage {
+    flex: 1;
+    position: relative;
+    background-color: var(--bg-main);
+    padding: 20px;
+    overflow-y: auto;
+}
 
-    <script src="script.js"></script>
-</body>
-</html>
+.lesson-container {
+    max-width: 900px;
+    margin: 0 auto;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 25px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.pdf-viewer-wrapper {
+    margin-top: 15px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.pdf-badge {
+    background: #f1f5f9;
+    color: var(--text-dark);
+    padding: 6px 12px;
+    font-size: 0.75rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.pdf-viewer-frame {
+    width: 100%;
+    height: 500px;
+    border: none;
+}
